@@ -1,5 +1,6 @@
 import { useEffect, useRef, useState } from "react";
 import { brandMapStyle } from "../lib/mapStyle";
+import { METRO_VOSTOK, WALK_MINUTES, WALK_ROUTE } from "../data/route";
 
 const ARKA = [27.65021, 53.93078]; // ул. Мстиславца, 10
 const LIBRARY = [27.64617, 53.93122]; // Национальная библиотека
@@ -22,6 +23,7 @@ export default function PlaceMap() {
   useEffect(() => {
     let map = null;
     let cancelled = false;
+    const route = [METRO_VOSTOK, ...WALK_ROUTE]; // от станции к выходу и дальше до дома
     const el = ref.current;
 
     const init = async () => {
@@ -53,7 +55,26 @@ export default function PlaceMap() {
           .setLngLat(ARKA).addTo(map);
         new maplibregl.Marker({ element: pin("map-pin map-pin--lib", "<i></i>Национальная библиотека"), anchor: "bottom" })
           .setLngLat(LIBRARY).addTo(map);
-        map.on("load", () => map.fitBounds([LIBRARY, ARKA], { padding: { top: 110, bottom: 80, left: 150, right: 110 }, maxZoom: 16, duration: 0 }));
+        new maplibregl.Marker({ element: pin("map-pin map-pin--metro", "<b>М</b>Восток"), anchor: "bottom" })
+          .setLngLat(METRO_VOSTOK).addTo(map);
+        // подпись времени — на середине пути
+        new maplibregl.Marker({ element: pin("map-pin map-pin--walk", `${WALK_MINUTES} мин пешком`), anchor: "left", offset: [12, 0] })
+          .setLngLat(route[Math.floor(route.length / 2)]).addTo(map);
+
+        map.on("load", () => {
+          // пунктир маршрута — под подписями улиц, но над дорогами
+          const beforeLabels = map.getStyle().layers.find((l) => l.type === "symbol")?.id;
+          map.addSource("walk", { type: "geojson", data: { type: "Feature", geometry: { type: "LineString", coordinates: route } } });
+          map.addLayer({ id: "walk-halo", type: "line", source: "walk", layout: { "line-cap": "round", "line-join": "round" },
+            paint: { "line-color": "#f4f0e8", "line-width": 9, "line-opacity": 0.9 } }, beforeLabels);
+          map.addLayer({ id: "walk-dash", type: "line", source: "walk", layout: { "line-cap": "round", "line-join": "round" },
+            paint: { "line-color": "#1f2f3b", "line-width": 3.5, "line-dasharray": [0.1, 2.2] } }, beforeLabels);
+          const pts = [...route, LIBRARY];
+          const lng = pts.map((p) => p[0]);
+          const lat = pts.map((p) => p[1]);
+          map.fitBounds([[Math.min(...lng), Math.min(...lat)], [Math.max(...lng), Math.max(...lat)]],
+            { padding: { top: 90, bottom: 70, left: 160, right: 150 }, maxZoom: 16, duration: 0 });
+        });
       } catch {
         if (!cancelled) setFailed(true);
       }

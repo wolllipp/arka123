@@ -742,6 +742,14 @@ symbol .fill,
   background: rgba(244, 240, 232, 0.92); color: var(--ink); font-size: 12px;
   box-shadow: 0 6px 18px rgba(31, 47, 59, 0.18);
 }
+.map-pin--metro {
+  height: 32px; padding: 0 12px 0 5px; border-radius: 999px;
+  background: rgba(244, 240, 232, 0.94); color: var(--ink); font-size: 12px;
+  box-shadow: 0 6px 18px rgba(31, 47, 59, 0.18);
+}
+/* знак минского метро — синяя «М» в круге */
+.map-pin--metro b { width: 22px; height: 22px; border-radius: 50%; display: grid; place-items: center; background: #1f5aa8; color: #fff; font-family: var(--f-display); font-size: 12px; font-weight: 800; }
+.map-pin--walk { height: 26px; padding: 0 10px; border-radius: 999px; background: var(--ink); color: var(--paper); font-size: 11px; box-shadow: 0 4px 12px rgba(31, 47, 59, 0.25); }
 .map-pin--lib i { width: 14px; height: 14px; border-radius: 50%; background: var(--sun); box-shadow: 0 0 0 4px rgba(242, 179, 107, 0.3); }
 /* элементы MapLibre — в стиле сайта */
 .place__map .maplibregl-ctrl-group { border-radius: 14px; overflow: hidden; box-shadow: 0 6px 18px rgba(31, 47, 59, 0.15); background: rgba(244, 240, 232, 0.92); }

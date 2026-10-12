@@ -11,7 +11,7 @@ export default function Place() {
             <div className="place__rows">
               <div><span className="eyebrow">Адрес</span><span className="h3">Минск, ул. Мстиславца, 10, 2 этаж</span></div>
               <div><span className="eyebrow">Ориентир</span><span>Два дома, соединённые аркой. С променада через арку видна Национальная библиотека — наши окна над ней.</span></div>
-              <div><span className="eyebrow">Метро</span><span>«Восток» — 10 минут пешком</span></div>
+              <div><span className="eyebrow">Метро</span><span>«Восток» — 6&nbsp;минут пешком, около 500&nbsp;м по&nbsp;пунктиру на карте</span></div>
             </div>
             <div className="place__actions">
               <a className="btn" href="#book">Забронировать зал</a>
