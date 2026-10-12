@@ -129,9 +129,30 @@ public class BookingService {
     }
 
     @Transactional(readOnly = true)
-    public List<BookingResponse> search(LocalDate date, BookingStatus status) {
-        return bookingRepository.search(date, status).stream().map(BookingResponse::from).toList();
+    public List<BookingResponse> search(LocalDate from, LocalDate to, BookingStatus status, String q) {
+        String query = q == null ? "" : q.trim();
+        LocalDate since = from != null ? from : LocalDate.of(2000, 1, 1);
+        LocalDate until = to != null ? to : LocalDate.of(2999, 12, 31);
+        List<BookingStatus> statuses = status != null ? List.of(status) : List.of(BookingStatus.values());
+        return bookingRepository.search(since, until, statuses, query).stream().map(BookingResponse::from).toList();
     }
+
+    /** Сводка для админки: что ждёт подтверждения, что сегодня, что на неделе */
+    @Transactional(readOnly = true)
+    public AdminStats stats() {
+        Hall hall = hallService.getMainHall();
+        LocalDate today = LocalDate.now(clock);
+        List<Booking> week = bookingRepository.findActiveBetween(hall.getHallId(), today, today.plusDays(6));
+        long todayCount = week.stream().filter(b -> b.getDate().equals(today)).count();
+        java.math.BigDecimal weekRevenue = week.stream()
+                .filter(b -> b.getStatus() == BookingStatus.CONFIRMED)
+                .map(Booking::getTotalPrice)
+                .reduce(java.math.BigDecimal.ZERO, java.math.BigDecimal::add);
+        long pending = bookingRepository.countByStatusAndDateGreaterThanEqual(BookingStatus.PENDING, today);
+        return new AdminStats(pending, todayCount, week.size(), weekRevenue);
+    }
+
+    public record AdminStats(long pending, long today, long week, java.math.BigDecimal weekRevenue) { }
 
     @Transactional
     public BookingResponse confirm(Integer id) {

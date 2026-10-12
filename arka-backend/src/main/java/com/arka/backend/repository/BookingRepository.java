@@ -26,8 +26,22 @@ public interface BookingRepository extends JpaRepository<Booking, Integer> {
 
     List<Booking> findByUserEmailOrderByDateDescStartTimeDesc(String email);
 
-    @Query("SELECT b FROM Booking b WHERE (:date IS NULL OR b.date = :date) AND (:status IS NULL OR b.status = :status) ORDER BY b.date, b.startTime")
-    List<Booking> search(@Param("date") LocalDate date, @Param("status") BookingStatus status);
+    /**
+     * Поиск для админки. Параметры всегда заданы (границы — крайние даты, статусы — список, q — пустая строка):
+     * с null PostgreSQL не может определить тип параметра в «? IS NULL».
+     */
+    @Query("""
+            SELECT b FROM Booking b
+            WHERE b.date BETWEEN :from AND :to
+              AND b.status IN :statuses
+              AND (:q = '' OR lower(b.contactName) LIKE lower(concat('%', :q, '%'))
+                           OR lower(b.contactEmail) LIKE lower(concat('%', :q, '%'))
+                           OR b.contactPhone LIKE concat('%', :q, '%'))
+            ORDER BY b.date, b.startTime""")
+    List<Booking> search(@Param("from") LocalDate from, @Param("to") LocalDate to,
+                         @Param("statuses") java.util.Collection<BookingStatus> statuses, @Param("q") String q);
+
+    long countByStatusAndDateGreaterThanEqual(BookingStatus status, LocalDate from);
 
     List<Booking> findByStatusAndCreatedAtBefore(BookingStatus status, LocalDateTime createdBefore);
 

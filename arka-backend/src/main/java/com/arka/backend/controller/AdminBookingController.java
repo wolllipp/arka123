@@ -19,10 +19,23 @@ public class AdminBookingController {
         this.bookingService = bookingService;
     }
 
+    /** Фильтры необязательны: date — один день (сокращение для from=to), from/to — период, q — имя, телефон или email */
     @GetMapping
     public List<BookingResponse> search(@RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate date,
-                                        @RequestParam(required = false) BookingStatus status) {
-        return bookingService.search(date, status);
+                                        @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate from,
+                                        @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate to,
+                                        @RequestParam(required = false) BookingStatus status,
+                                        @RequestParam(required = false) String q) {
+        if (date != null) {
+            from = date;
+            to = date;
+        }
+        return bookingService.search(from, to, status, q);
+    }
+
+    @GetMapping("/stats")
+    public BookingService.AdminStats stats() {
+        return bookingService.stats();
     }
 
     @PostMapping("/{id}/confirm")

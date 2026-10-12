@@ -48,7 +48,8 @@ mvn spring-boot:run             # API на http://localhost:8090
 | GET | `/api/bookings/{code}` | все | бронь по коду |
 | POST | `/api/bookings/{code}/cancel` | все | отмена гостем |
 | GET | `/api/bookings/my` | вошедший | мои брони |
-| GET | `/api/admin/bookings?date=&status=` | ADMIN | список |
+| GET | `/api/admin/bookings?from=&to=&status=&q=` | ADMIN | список: период, статус, поиск по имени, телефону, email |
+| GET | `/api/admin/bookings/stats` | ADMIN | сводка: ждут подтверждения, сегодня, неделя, выручка |
 | POST | `/api/admin/bookings/{id}/confirm` | ADMIN | подтвердить |
 | POST | `/api/admin/bookings/{id}/cancel` | ADMIN | отменить |
 

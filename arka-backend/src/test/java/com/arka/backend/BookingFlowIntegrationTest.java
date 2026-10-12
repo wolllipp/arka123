@@ -322,6 +322,31 @@ class BookingFlowIntegrationTest {
     }
 
     @Test
+    void adminSearch_filtersByPeriodStatusAndText() throws Exception {
+        LocalDate day = freshDay();
+        String email = uniqueEmail();
+        bookAs(email, day, "08:00", "10:00", 201);
+        String admin = field(mvc.perform(post("/api/auth/login").contentType(MediaType.APPLICATION_JSON)
+                .content("{\"email\":\"admin@arka123.by\",\"password\":\"admin-password\"}")).andReturn(), "token");
+
+        // период + статус + поиск по части email
+        mvc.perform(get("/api/admin/bookings").header("Authorization", "Bearer " + admin)
+                        .param("from", day.toString()).param("to", day.toString())
+                        .param("status", "PENDING").param("q", email.substring(0, 12).toUpperCase()))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.length()").value(1))
+                .andExpect(jsonPath("$[0].contactEmail").value(email));
+        // поиск по телефону без совпадений
+        mvc.perform(get("/api/admin/bookings").header("Authorization", "Bearer " + admin)
+                        .param("from", day.toString()).param("q", "+999"))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.length()").value(0));
+        mvc.perform(get("/api/admin/bookings/stats").header("Authorization", "Bearer " + admin))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.pending").isNumber());
+    }
+
+    @Test
     void wrongPassword_401() throws Exception {
         mvc.perform(post("/api/auth/login").contentType(MediaType.APPLICATION_JSON)
                         .content("{\"email\":\"admin@arka123.by\",\"password\":\"nope\"}"))
