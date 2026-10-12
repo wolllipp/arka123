@@ -2,7 +2,7 @@ import { useCallback, useEffect, useRef, useState } from "react";
 import { api } from "../../api/client";
 import { MONTHS_NOM, WEEKDAYS, dayMonth, hh, hoursWord, isoDate, money, parseDate } from "../../lib/format";
 import WaitOverlay from "./WaitOverlay";
-import { PHONE_DEFAULT, isPhoneComplete, nextPhoneValue } from "../../lib/phone";
+import { PHONE_DEFAULT, PHONE_EXAMPLE, isPhoneComplete, nextPhoneValue } from "../../lib/phone";
 
 const DAYS_AHEAD = 14;
 const EMPTY_FORM = { layout: "LECTURE", guests: 10, services: [], contactName: "", contactPhone: PHONE_DEFAULT, contactEmail: "", comment: "" };
@@ -265,8 +265,16 @@ export default function BookingWidget() {
           </fieldset>
           <div className="bform__row">
             <label>Имя<input autoFocus autoComplete="name" value={form.contactName} onChange={(e) => setField("contactName", e.target.value)} aria-invalid={invalid.contactName || undefined} /></label>
-            <label>Телефон<input type="tel" inputMode="tel" autoComplete="tel" value={form.contactPhone}
-              onChange={(e) => setField("contactPhone", nextPhoneValue(form.contactPhone, e.target.value))} aria-invalid={invalid.contactPhone || undefined} /></label>
+            <label>Телефон
+              <span className="phone">
+                <input type="tel" inputMode="tel" autoComplete="tel" value={form.contactPhone}
+                  onChange={(e) => setField("contactPhone", nextPhoneValue(form.contactPhone, e.target.value))} aria-invalid={invalid.contactPhone || undefined} />
+                {/* оставшаяся часть примера — светлым поверх поля, сдвигается вслед за вводом */}
+                <span className="phone__ghost" aria-hidden="true">
+                  <span className="phone__typed">{form.contactPhone}</span>{PHONE_EXAMPLE.slice(form.contactPhone.length)}
+                </span>
+              </span>
+            </label>
           </div>
           <label><span>Email <span className="bform__opt">пришлём подтверждение и напоминание</span></span>
             <input type="email" autoComplete="email" required value={form.contactEmail} onChange={(e) => setField("contactEmail", e.target.value)} aria-invalid={invalid.contactEmail || undefined} />

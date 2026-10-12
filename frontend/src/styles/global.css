@@ -651,6 +651,15 @@ symbol .fill,
 @media (max-width: 520px) { .bform__row { grid-template-columns: 1fr; } }
 .bform__opt { font-weight: 400; color: rgba(244, 240, 232, 0.45); }
 .bform__guests { max-width: 180px; }
+/* телефон: «+375 » введено, остальное — светлый пример, который убывает по мере ввода */
+.phone { position: relative; display: grid; }
+.phone__ghost {
+  position: absolute; inset: 0; padding: 12px 14px; pointer-events: none;
+  font-size: 16px; font-weight: 500; line-height: normal; white-space: pre; overflow: hidden;
+  display: flex; align-items: center;
+  color: rgba(244, 240, 232, 0.3);
+}
+.phone__typed { color: transparent; }
 /* формат пространства — карточки-переключатели: та же пластика, что у чипов и дней календаря */
 .opts { border: 0; display: grid; grid-template-columns: repeat(4, 1fr); gap: 8px; }
 .opts legend { font-size: 13px; font-weight: 600; color: rgba(244, 240, 232, 0.75); margin-bottom: 6px; }
