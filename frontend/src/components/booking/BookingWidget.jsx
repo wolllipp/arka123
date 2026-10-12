@@ -170,6 +170,9 @@ export default function BookingWidget() {
     loadDays();
   };
 
+  const chosenLayout = catalog?.layouts.find((l) => l.code === form.layout);
+  const overCapacity = !!chosenLayout && Number(form.guests) > chosenLayout.capacity;
+
   const monthTitle = days.length
     ? [...new Set(days.map((d) => parseDate(d.date).getMonth()))].map((m) => MONTHS_NOM[m]).join(" — ") + " " + parseDate(days[0].date).getFullYear()
     : msg.pick ? "Календарь недоступен" : "Загружаем календарь…";
@@ -220,16 +223,27 @@ export default function BookingWidget() {
       {step === "form" && catalog && (
         <form className="step bform" noValidate onSubmit={submit}>
           <button type="button" className="bform__back" onClick={() => setStep("pick")}>← {when}</button>
-          <div className="bform__row">
-            <label>Формат
-              <select value={form.layout} onChange={(e) => setField("layout", e.target.value)} aria-invalid={invalid.layout || undefined}>
-                {catalog.layouts.map((l) => <option key={l.code} value={l.code}>{`${l.title} · до ${l.capacity}`}</option>)}
-              </select>
-            </label>
-            <label>Гостей
-              <input type="number" min="1" inputMode="numeric" value={form.guests} onChange={(e) => setField("guests", e.target.value)} aria-invalid={invalid.guests || undefined} />
-            </label>
-          </div>
+          <label className="bform__guests">Гостей
+            <input type="number" min="1" inputMode="numeric" value={form.guests} onChange={(e) => setField("guests", e.target.value)} aria-invalid={invalid.guests || undefined} />
+          </label>
+          {/* формат — карточки-переключатели в стиле чипов и дней календаря; не вмещающие гостей недоступны */}
+          <fieldset className="opts" aria-invalid={invalid.layout || overCapacity || undefined}>
+            <legend>Формат</legend>
+            {catalog.layouts.map((l) => {
+              const fits = Number(form.guests) <= l.capacity;
+              return (
+                <label className="opt" key={l.code}>
+                  <input type="radio" name="layout" value={l.code} checked={form.layout === l.code}
+                    disabled={!fits && form.layout !== l.code} onChange={() => setField("layout", l.code)} />
+                  <span>
+                    <b>{l.title}</b>
+                    <small>до {l.capacity} гостей</small>
+                  </span>
+                </label>
+              );
+            })}
+          </fieldset>
+          {overCapacity && <p className="cal__msg">Выбранный формат вмещает до {chosenLayout.capacity} гостей — уменьшите число гостей или выберите другой.</p>}
           <fieldset className="bform__services">
             <legend>Дополнительно</legend>
             {catalog.services.map((s) => {
@@ -259,7 +273,7 @@ export default function BookingWidget() {
               <span className="cal__sum-label">{price ? `Тариф «${price.tariffName}» · ${price.hours} ${hoursWord(price.hours)}` : "Тариф"}</span><br />
               <strong>{price ? money(price.total) : "—"}</strong>
             </div>
-            <button className="btn btn--sun" type="submit" disabled={!!wait}>Забронировать</button>
+            <button className="btn btn--sun" type="submit" disabled={!!wait || overCapacity}>Забронировать</button>
           </div>
         </form>
       )}

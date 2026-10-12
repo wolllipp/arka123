@@ -70,7 +70,7 @@ button { font: inherit; color: inherit; background: none; border: 0; cursor: poi
   font-family: var(--f-display);
   font-weight: 800;
   font-size: clamp(36px, 5.4vw, 76px);
-  line-height: 1.02;
+  line-height: 1.08; /* 1.02 мало для кириллицы: хвост «у» в «дату» почти касался строки ниже */
   letter-spacing: -0.035em;
 }
 .h2 {
@@ -650,6 +650,33 @@ symbol .fill,
 .bform__row { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
 @media (max-width: 520px) { .bform__row { grid-template-columns: 1fr; } }
 .bform__opt { font-weight: 400; color: rgba(244, 240, 232, 0.45); }
+.bform__guests { max-width: 180px; }
+/* формат пространства — карточки-переключатели: та же пластика, что у чипов и дней календаря */
+.opts { border: 0; display: grid; grid-template-columns: repeat(4, 1fr); gap: 8px; }
+.opts legend { font-size: 13px; font-weight: 600; color: rgba(244, 240, 232, 0.75); margin-bottom: 6px; }
+@media (max-width: 620px) { .opts { grid-template-columns: 1fr 1fr; } }
+.opt { position: relative; }
+.opt input { position: absolute; opacity: 0; pointer-events: none; }
+.opt span {
+  display: grid; grid-template-rows: 1fr auto; gap: 4px; height: 100%; /* подпись вместимости — всегда по нижнему краю */
+  padding: 12px 14px; border-radius: 16px; cursor: pointer;
+  box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.14);
+  transition: background-color 150ms ease, color 150ms ease, transform 160ms var(--ease-out), opacity 150ms ease;
+}
+.opt b { font-size: 14px; font-weight: 600; line-height: 1.25; }
+.opt small { font-size: 12px; color: rgba(244, 240, 232, 0.55); transition: color 150ms ease; }
+.opt span:active { transform: scale(0.97); }
+@media (hover: hover) and (pointer: fine) { .opt input:not(:checked):not(:disabled) + span:hover { background: rgba(255, 255, 255, 0.07); } }
+.opt input:checked + span { background: var(--paper); color: var(--ink); box-shadow: none; }
+.opt input:checked + span small { color: var(--ink-soft); }
+.opt input:disabled + span { opacity: 0.35; cursor: not-allowed; }
+.opt input:focus-visible + span { outline: 2px solid var(--sun); outline-offset: 2px; }
+.opts[aria-invalid="true"] .opt input:checked + span { box-shadow: inset 0 0 0 2px #ff8a7a; }
+.bform .opts[aria-invalid="true"] { box-shadow: none; } /* подсвечиваем выбранную карточку, а не весь блок */
+/* без системных стрелок у числа гостей — как остальные поля */
+.bform input[type="number"] { -moz-appearance: textfield; appearance: textfield; }
+.bform input[type="number"]::-webkit-inner-spin-button,
+.bform input[type="number"]::-webkit-outer-spin-button { -webkit-appearance: none; margin: 0; }
 .bform__back { justify-self: start; font-size: 14px; font-weight: 600; color: rgba(244, 240, 232, 0.75); }
 .bform__services { border: 0; display: flex; flex-wrap: wrap; gap: 8px; }
 .bform__services legend { font-size: 13px; font-weight: 600; color: rgba(244, 240, 232, 0.75); margin-bottom: 6px; }
