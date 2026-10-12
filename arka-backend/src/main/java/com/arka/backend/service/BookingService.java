@@ -9,9 +9,11 @@ import com.arka.backend.exceptions.BookingConflictException;
 import com.arka.backend.exceptions.BookingRuleException;
 import com.arka.backend.exceptions.GlobalExceptionHandler;
 import com.arka.backend.exceptions.NotFoundException;
+import com.arka.backend.notification.BookingEvent;
 import com.arka.backend.repository.BookingRepository;
 import com.arka.backend.repository.UserRepository;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -31,17 +33,19 @@ public class BookingService {
     private final HallService hallService;
     private final PricingService pricingService;
     private final BusyHoursService busyHoursService;
+    private final ApplicationEventPublisher events;
     private final Clock clock;
     private final int freeCancelHours;
 
     public BookingService(BookingRepository bookingRepository, UserRepository userRepository, HallService hallService,
-                          PricingService pricingService, BusyHoursService busyHoursService, Clock clock,
-                          @Value("${app.booking.free-cancel-hours}") int freeCancelHours) {
+                          PricingService pricingService, BusyHoursService busyHoursService, ApplicationEventPublisher events,
+                          Clock clock, @Value("${app.booking.free-cancel-hours}") int freeCancelHours) {
         this.bookingRepository = bookingRepository;
         this.userRepository = userRepository;
         this.hallService = hallService;
         this.pricingService = pricingService;
         this.busyHoursService = busyHoursService;
+        this.events = events;
         this.clock = clock;
         this.freeCancelHours = freeCancelHours;
     }
@@ -95,6 +99,7 @@ public class BookingService {
             throw e;
         }
         busyHoursService.evict(hall.getHallId(), booking.getDate());
+        events.publishEvent(BookingEvent.of(booking.getBookingId(), BookingEvent.Type.CREATED));
         return BookingResponse.from(booking);
     }
 
@@ -113,7 +118,7 @@ public class BookingService {
         if (booking.getStartsAt().minusHours(freeCancelHours).isBefore(LocalDateTime.now(clock))) {
             throw new BookingRuleException("Отменить онлайн можно не позднее чем за " + freeCancelHours + " ч до начала — позвоните администратору");
         }
-        return cancel(booking);
+        return cancel(booking, BookingEvent.CancelReason.BY_GUEST);
     }
 
     @Transactional(readOnly = true)
@@ -135,6 +140,7 @@ public class BookingService {
             throw new BookingRuleException("Подтвердить можно только бронь в статусе PENDING");
         }
         booking.setStatus(BookingStatus.CONFIRMED);
+        events.publishEvent(BookingEvent.of(booking.getBookingId(), BookingEvent.Type.CONFIRMED));
         return BookingResponse.from(booking);
     }
 
@@ -145,12 +151,13 @@ public class BookingService {
         if (booking.getStatus() == BookingStatus.CANCELLED) {
             throw new BookingRuleException("Бронь уже отменена");
         }
-        return cancel(booking);
+        return cancel(booking, BookingEvent.CancelReason.BY_ADMIN);
     }
 
-    private BookingResponse cancel(Booking booking) {
+    private BookingResponse cancel(Booking booking, BookingEvent.CancelReason reason) {
         booking.setStatus(BookingStatus.CANCELLED);
         busyHoursService.evict(booking.getHall().getHallId(), booking.getDate());
+        events.publishEvent(BookingEvent.cancelled(booking.getBookingId(), reason));
         return BookingResponse.from(booking);
     }
 

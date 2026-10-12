@@ -1,0 +1,52 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" lang="ru">
+<body>
+<!-- Общие куски писем. Почтовые клиенты понимают только таблицы и инлайн-стили. -->
+
+<!--/* шапка: знак-текст и надзаголовок */-->
+<th:block th:fragment="header(eyebrow)">
+  <tr>
+    <td style="padding:28px 32px 0;font-family:Arial,Helvetica,sans-serif;">
+      <span style="font-size:20px;font-weight:800;letter-spacing:-0.02em;color:#213443;">АРКА 123</span>
+    </td>
+  </tr>
+  <tr>
+    <td style="padding:28px 32px 0;font-family:Arial,Helvetica,sans-serif;font-size:12px;font-weight:700;letter-spacing:0.08em;text-transform:uppercase;color:#e0894f;" th:text="${eyebrow}">Бронирование</td>
+  </tr>
+</th:block>
+
+<!--/* карточка с деталями брони */-->
+<th:block th:fragment="details">
+  <tr>
+    <td style="padding:20px 32px 0;">
+      <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="background:#f4f0e8;border-radius:16px;font-family:Arial,Helvetica,sans-serif;color:#213443;">
+        <tr><td style="padding:18px 20px 4px;font-size:22px;font-weight:800;letter-spacing:-0.02em;" th:text="|${dateText}, ${timeText}|">15 октября, 10:00–14:00</td></tr>
+        <tr><td style="padding:0 20px 14px;font-size:14px;color:#66737d;" th:text="|${weekday} · ${b.hours} ч · ${layoutText} · ${b.guests} гостей|">четверг · 4 ч</td></tr>
+        <tr th:each="s : ${services}"><td style="padding:0 20px 6px;font-size:14px;" th:text="|+ ${s}|">+ Проектор</td></tr>
+        <tr><td style="padding:10px 20px 18px;font-size:16px;"><span style="color:#66737d;">Итого:</span> <b th:text="${total}">250 BYN</b> <span style="color:#66737d;font-size:13px;">· оплата после подтверждения</span></td></tr>
+      </table>
+    </td>
+  </tr>
+</th:block>
+
+<!--/* кнопка */-->
+<th:block th:fragment="button(href, label)">
+  <tr>
+    <td style="padding:24px 32px 0;">
+      <a th:href="${href}" style="display:inline-block;background:#f2b36b;color:#213443;font-family:Arial,Helvetica,sans-serif;font-size:15px;font-weight:700;text-decoration:none;padding:14px 26px;border-radius:999px;" th:text="${label}">Открыть бронь</a>
+    </td>
+  </tr>
+</th:block>
+
+<!--/* подвал */-->
+<th:block th:fragment="footer">
+  <tr>
+    <td style="padding:28px 32px 32px;font-family:Arial,Helvetica,sans-serif;font-size:13px;line-height:1.5;color:#66737d;">
+      <span th:text="${address}">Минск, ул. Мстиславца, 10</span><br />
+      Два дома, соединённые аркой: пройдите через арку с променада — наши окна смотрят на Национальную библиотеку.<br />
+      <span style="color:#213443;font-weight:700;">Встречаемся напротив Библиотеки.</span>
+    </td>
+  </tr>
+</th:block>
+</body>
+</html>

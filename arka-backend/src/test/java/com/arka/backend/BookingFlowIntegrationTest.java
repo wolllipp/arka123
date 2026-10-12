@@ -11,6 +11,12 @@ import org.springframework.boot.testcontainers.service.connection.ServiceConnect
 import org.springframework.boot.webmvc.test.autoconfigure.AutoConfigureMockMvc;
 import org.springframework.http.MediaType;
 import org.springframework.jdbc.core.JdbcTemplate;
+import org.springframework.mail.javamail.JavaMailSender;
+import org.springframework.test.context.bean.override.mockito.MockitoBean;
+import jakarta.mail.Message;
+import jakarta.mail.Session;
+import jakarta.mail.internet.MimeMessage;
+import org.junit.jupiter.api.BeforeEach;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.MvcResult;
 import org.testcontainers.junit.jupiter.Container;
@@ -27,6 +33,7 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 import static org.junit.jupiter.api.Assertions.*;
+import static org.mockito.Mockito.*;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
@@ -40,7 +47,8 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
         "jwt.secret=test-secret-test-secret-test-secret-test-secret",
         "spring.cache.type=simple",
         "admin.email=admin@arka123.by",
-        "admin.password=admin-password"
+        "admin.password=admin-password",
+        "app.mail.admin-to=owner@arka123.by"
 })
 @AutoConfigureMockMvc
 @Testcontainers(disabledWithoutDocker = true)
@@ -59,6 +67,10 @@ class BookingFlowIntegrationTest {
     @Autowired
     private JdbcTemplate jdbc;
 
+    /** Настоящий SMTP в тестах не нужен: перехватываем готовые письма */
+    @MockitoBean
+    private JavaMailSender mailSender;
+
     private static final AtomicInteger DAY = new AtomicInteger(3);
 
     /** Каждый тест бронирует свой день — тесты не мешают друг другу */
@@ -67,14 +79,22 @@ class BookingFlowIntegrationTest {
     }
 
     private String bookingJson(LocalDate date, String from, String to) {
+        return bookingJson(date, from, to, "anna@example.com");
+    }
+
+    private String bookingJson(LocalDate date, String from, String to, String email) {
         return """
                 {"date":"%s","startTime":"%s","endTime":"%s","layout":"LECTURE","guests":20,
-                 "services":["PROJECTOR"],"contactName":"Анна","contactPhone":"+375 29 123-45-67"}
-                """.formatted(date, from, to);
+                 "services":["PROJECTOR"],"contactName":"Анна","contactPhone":"+375 29 123-45-67","contactEmail":"%s"}
+                """.formatted(date, from, to, email);
     }
 
     private MvcResult book(LocalDate date, String from, String to, int expectedStatus) throws Exception {
-        return mvc.perform(post("/api/bookings").contentType(MediaType.APPLICATION_JSON).content(bookingJson(date, from, to)))
+        return bookAs("anna@example.com", date, from, to, expectedStatus);
+    }
+
+    private MvcResult bookAs(String email, LocalDate date, String from, String to, int expectedStatus) throws Exception {
+        return mvc.perform(post("/api/bookings").contentType(MediaType.APPLICATION_JSON).content(bookingJson(date, from, to, email)))
                 .andExpect(status().is(expectedStatus))
                 .andReturn();
     }
@@ -83,6 +103,86 @@ class BookingFlowIntegrationTest {
         Matcher m = Pattern.compile("\"" + name + "\":\"([^\"]+)\"").matcher(r.getResponse().getContentAsString());
         assertTrue(m.find(), "в ответе нет поля " + name);
         return m.group(1);
+    }
+
+    @BeforeEach
+    void mail() {
+        when(mailSender.createMimeMessage()).thenAnswer(i -> new MimeMessage((Session) null));
+    }
+
+    /** Письма уходят асинхронно — ждём конкретное письмо по получателю и теме, а не считаем все отправки */
+    private MimeMessage awaitMail(String to, String subjectPrefix) throws Exception {
+        long deadline = System.currentTimeMillis() + 5000;
+        while (System.currentTimeMillis() < deadline) {
+            for (var inv : mockingDetails(mailSender).getInvocations()) {
+                if (inv.getMethod().getName().equals("send") && inv.getArgument(0) instanceof MimeMessage m
+                        && recipient(m).equals(to) && m.getSubject() != null && m.getSubject().startsWith(subjectPrefix)) {
+                    return m;
+                }
+            }
+            Thread.sleep(50);
+        }
+        throw new AssertionError("нет письма «" + subjectPrefix + "…» для " + to);
+    }
+
+    private static String uniqueEmail() {
+        return "guest" + System.nanoTime() + "@example.com";
+    }
+
+    @Test
+    void createdBooking_sendsBrandedMailToGuestAndAdmin() throws Exception {
+        String email = uniqueEmail();
+        String code = field(bookAs(email, freshDay(), "15:00", "17:00", 201), "code");
+
+        MimeMessage guest = awaitMail(email, "Заявка принята");
+        String html = html(guest);
+        assertTrue(html.contains(code), "в письме есть код брони");
+        assertTrue(html.contains("/booking/" + code), "ссылка на страницу брони");
+        assertTrue(html.contains("15:00–17:00"));
+        assertTrue(html.contains("Встречаемся напротив Библиотеки"));
+
+        MimeMessage admin = awaitMail("owner@arka123.by", "Новая бронь");
+        assertTrue(html(admin).contains(email), "администратор видит контакты гостя");
+    }
+
+    @Test
+    void cancelByGuest_sendsCancellationMail() throws Exception {
+        String email = uniqueEmail();
+        String code = field(bookAs(email, freshDay(), "19:00", "21:00", 201), "code");
+
+        mvc.perform(post("/api/bookings/" + code + "/cancel")).andExpect(status().isOk());
+
+        assertTrue(html(awaitMail(email, "Бронь отменена")).contains("Вы отменили бронь"));
+    }
+
+    @Test
+    void mailFailure_doesNotBreakBooking() throws Exception {
+        String email = uniqueEmail();
+        doThrow(new org.springframework.mail.MailSendException("smtp down"))
+                .when(mailSender).send(argThat((MimeMessage m) -> recipient(m).equals(email)));
+        bookAs(email, freshDay(), "10:00", "12:00", 201);
+    }
+
+    private static String recipient(MimeMessage m) {
+        try {
+            return m.getRecipients(Message.RecipientType.TO)[0].toString();
+        } catch (Exception e) {
+            throw new IllegalStateException(e);
+        }
+    }
+
+    private static String html(MimeMessage m) throws Exception {
+        return collect(m.getContent());
+    }
+
+    private static String collect(Object content) throws Exception {
+        if (content instanceof String s) return s;
+        if (content instanceof jakarta.mail.Multipart mp) {
+            StringBuilder sb = new StringBuilder();
+            for (int i = 0; i < mp.getCount(); i++) sb.append(collect(mp.getBodyPart(i).getContent()));
+            return sb.toString();
+        }
+        return "";
     }
 
     @Test
@@ -153,7 +253,7 @@ class BookingFlowIntegrationTest {
                 start.await();
                 try {
                     bookingService.createBooking(new BookingRequest(day, LocalTime.of(12, 0), LocalTime.of(15, 0),
-                            Layout.TABLE, 10, List.of(), "Гонщик", "+375290000000"), null);
+                            Layout.TABLE, 10, List.of(), "Гонщик", "+375290000000", "racer@example.com"), null);
                     ok.incrementAndGet();
                 } catch (BookingConflictException e) {
                     conflict.incrementAndGet();
@@ -178,7 +278,8 @@ class BookingFlowIntegrationTest {
         mvc.perform(post("/api/bookings").contentType(MediaType.APPLICATION_JSON).content(bad))
                 .andExpect(status().isBadRequest())
                 .andExpect(jsonPath("$.fields.contactPhone").exists())
-                .andExpect(jsonPath("$.fields.guests").exists());
+                .andExpect(jsonPath("$.fields.guests").exists())
+                .andExpect(jsonPath("$.fields.contactEmail").value("Укажите email — пришлём подтверждение и напоминание"));
     }
 
     @Test

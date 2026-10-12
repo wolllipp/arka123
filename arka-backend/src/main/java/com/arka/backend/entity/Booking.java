@@ -60,6 +60,8 @@ public class Booking {
     private LocalDateTime createdAt = LocalDateTime.now();
     @Column(name = "updated_at", nullable = false)
     private LocalDateTime updatedAt = LocalDateTime.now();
+    @Column(name = "reminder_sent_at")
+    private LocalDateTime reminderSentAt;
 
     public Booking() { }
 
@@ -218,6 +220,14 @@ public class Booking {
 
     public void setCreatedAt(LocalDateTime createdAt) {
         this.createdAt = createdAt;
+    }
+
+    public LocalDateTime getReminderSentAt() {
+        return reminderSentAt;
+    }
+
+    public void setReminderSentAt(LocalDateTime reminderSentAt) {
+        this.reminderSentAt = reminderSentAt;
     }
 
     public LocalDateTime getUpdatedAt() {

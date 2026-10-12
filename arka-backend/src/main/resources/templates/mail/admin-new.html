@@ -1,0 +1,19 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" lang="ru">
+<head><meta charset="UTF-8" /><meta name="viewport" content="width=device-width" /><title th:text="${subject}">АРКА 123</title></head>
+<body style="margin:0;padding:0;background:#f4f0e8;">
+<table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="background:#f4f0e8;">
+<tr><td align="center" style="padding:24px 12px;">
+<table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="max-width:560px;background:#ffffff;border-radius:24px;">
+  <th:block th:replace="~{mail/parts :: header('Новая заявка')}" />
+  <tr><td style="padding:8px 32px 0;font-family:Arial,Helvetica,sans-serif;font-size:28px;line-height:1.15;font-weight:800;letter-spacing:-0.02em;color:#213443;">Новая бронь ждёт подтверждения</td></tr>
+  <tr><td style="padding:12px 32px 0;font-family:Arial,Helvetica,sans-serif;font-size:15px;line-height:1.55;color:#3b4b57;" ><b th:text="${b.contactName}">Имя</b> · <span th:text="${b.contactPhone}">телефон</span> · <span th:text="${b.contactEmail}">email</span></td></tr>
+  <tr><td style="padding:12px 32px 0;font-family:Arial,Helvetica,sans-serif;font-size:15px;line-height:1.55;color:#3b4b57;" th:if="${b.comment}" th:text="|Комментарий: ${b.comment}|">Комментарий</td></tr>
+  <th:block th:replace="~{mail/parts :: details}" />
+  <tr><td style="padding:12px 32px 0;font-family:Arial,Helvetica,sans-serif;font-size:15px;line-height:1.55;color:#3b4b57;" >Подтвердить или отменить: <code>POST /api/admin/bookings/<span th:text="${b.bookingId}">1</span>/confirm</code></td></tr>
+  <th:block th:replace="~{mail/parts :: footer}" />
+</table>
+</td></tr>
+</table>
+</body>
+</html>

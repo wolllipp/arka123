@@ -5,6 +5,7 @@ import com.arka.backend.dto.BookingResponse;
 import com.arka.backend.entity.*;
 import com.arka.backend.exceptions.BookingConflictException;
 import com.arka.backend.exceptions.BookingRuleException;
+import com.arka.backend.notification.BookingEvent;
 import com.arka.backend.repository.BookingRepository;
 import com.arka.backend.repository.UserRepository;
 import com.arka.backend.service.BookingService;
@@ -17,6 +18,7 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.mockito.junit.jupiter.MockitoSettings;
+import org.springframework.context.ApplicationEventPublisher;
 import org.mockito.quality.Strictness;
 
 import java.math.BigDecimal;
@@ -48,6 +50,9 @@ public class BookingServiceTest {
     @Mock
     private BusyHoursService busyHoursService;
 
+    @Mock
+    private ApplicationEventPublisher events;
+
     private BookingService bookingService;
 
     // «сейчас» — 12 октября 2026, 12:00 по Минску
@@ -58,7 +63,7 @@ public class BookingServiceTest {
 
     @BeforeEach
     void setUp() {
-        bookingService = new BookingService(bookingRepository, userRepository, hallService, pricingService, busyHoursService, clock, 24);
+        bookingService = new BookingService(bookingRepository, userRepository, hallService, pricingService, busyHoursService, events, clock, 24);
         when(hallService.getMainHall()).thenReturn(hall);
         when(bookingRepository.findOverlappingBookings(any(), any(), any(), any())).thenReturn(List.of());
         when(pricingService.quote(anyInt(), anyInt(), any()))
@@ -66,7 +71,7 @@ public class BookingServiceTest {
     }
 
     private BookingRequest request(LocalDate date, int from, int to, Layout layout, int guests) {
-        return new BookingRequest(date, LocalTime.of(from, 0), LocalTime.of(to, 0), layout, guests, List.of(), "Анна", "+375291234567");
+        return new BookingRequest(date, LocalTime.of(from, 0), LocalTime.of(to, 0), layout, guests, List.of(), "Анна", "+375291234567", "anna@example.com");
     }
 
     @Test
@@ -78,6 +83,7 @@ public class BookingServiceTest {
         assertNotNull(b.code());
         verify(bookingRepository).saveAndFlush(any(Booking.class));
         verify(busyHoursService).evict(1, tomorrow);
+        verify(events).publishEvent(argThat((Object e) -> e instanceof BookingEvent be && be.type() == BookingEvent.Type.CREATED));
     }
 
     @Test
@@ -97,6 +103,7 @@ public class BookingServiceTest {
         assertThrows(BookingConflictException.class,
                 () -> bookingService.createBooking(request(tomorrow, 10, 12, Layout.LECTURE, 30), null));
         verify(bookingRepository, never()).saveAndFlush(any());
+        verify(events, never()).publishEvent(any(Object.class));
     }
 
     @Test

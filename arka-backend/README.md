@@ -1,13 +1,13 @@
 # АРКА 123 — backend бронирования
 
-Java 17 · Spring Boot 4.1 · PostgreSQL 16 · Flyway · Spring Security + JWT (jjwt 0.13) · Redis (кэш доступности) · Testcontainers.
+Java 17 · Spring Boot 4.1 · PostgreSQL 16 · Flyway · Spring Security + JWT (jjwt 0.13) · Redis (кэш доступности) · Spring Mail + Thymeleaf (письма) · Testcontainers.
 Структура и стиль — как в [coworks_project](https://github.com/wolllipp/coworks_project).
 
 ## Запуск
 
 ```bash
 cp .env.example .env            # заполнить пароли и JWT_SECRET (≥ 32 байта)
-docker compose up -d            # Postgres :5435, Redis :6380
+docker compose up -d            # Postgres :5435, Redis :6380, Mailpit :8025
 set -a; . ./.env; set +a
 mvn spring-boot:run             # API на http://localhost:8090
 ```
@@ -24,6 +24,14 @@ mvn spring-boot:run             # API на http://localhost:8090
 - **Без регистрации.** Гость бронирует по телефону и получает `code`, по нему смотрит и отменяет бронь. Если запрос пришёл с JWT, бронь привязывается к аккаунту — пользователь берётся из токена, а не из тела запроса.
 - **Жизненный цикл:** `PENDING` → `CONFIRMED` (админ) или `CANCELLED`. Гость отменяет онлайн не позднее чем за 24 ч. Неподтверждённая бронь снимается через 24 ч (job раз в 10 мин), чтобы не держать слот.
 - **Redis** кэширует занятые часы дня (TTL 10 мин, сброс при создании/отмене). Если Redis недоступен, запросы идут в БД, ошибка кэша только логируется.
+
+## Письма
+
+Гостю — «заявка принята» (с кодом и ссылкой на страницу брони), «подтверждена», «отменена» (с причиной), напоминание за сутки до начала. Администратору (`ADMIN_NOTIFY_EMAIL`) — о каждой новой брони. Email в брони обязателен.
+
+- Шаблоны — `src/main/resources/templates/mail/`, в стиле сайта; таблицы и инлайн-стили для почтовых клиентов.
+- Отправка — по событию `BookingEvent` после коммита и в фоне (`@TransactionalEventListener(AFTER_COMMIT)` + `@Async`): если почта недоступна, бронь всё равно сохраняется.
+- Локально письма ловит **Mailpit**: http://localhost:8025. Для настоящей отправки — переменные `SMTP_*` и `MAIL_FROM` (пример для Gmail — в `.env.example`).
 
 ## API
 

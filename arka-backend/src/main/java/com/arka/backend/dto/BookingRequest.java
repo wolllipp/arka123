@@ -27,7 +27,9 @@ public class BookingRequest {
     @NotBlank(message = "Укажите телефон")
     @Pattern(regexp = "^\\+?[0-9 ()-]{7,20}$", message = "Некорректный телефон")
     private String contactPhone;
+    @NotBlank(message = "Укажите email — пришлём подтверждение и напоминание")
     @Email(message = "Некорректный email")
+    @Size(max = 255)
     private String contactEmail;
     @Size(max = 1000)
     private String comment;
@@ -35,7 +37,7 @@ public class BookingRequest {
     public BookingRequest() { }
 
     public BookingRequest(LocalDate date, LocalTime startTime, LocalTime endTime, Layout layout, Integer guests,
-                          List<String> services, String contactName, String contactPhone) {
+                          List<String> services, String contactName, String contactPhone, String contactEmail) {
         this.date = date;
         this.startTime = startTime;
         this.endTime = endTime;
@@ -44,6 +46,7 @@ public class BookingRequest {
         this.services = services;
         this.contactName = contactName;
         this.contactPhone = contactPhone;
+        this.contactEmail = contactEmail;
     }
 
     public LocalDate getDate() {

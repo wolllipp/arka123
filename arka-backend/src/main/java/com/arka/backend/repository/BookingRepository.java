@@ -30,4 +30,7 @@ public interface BookingRepository extends JpaRepository<Booking, Integer> {
     List<Booking> search(@Param("date") LocalDate date, @Param("status") BookingStatus status);
 
     List<Booking> findByStatusAndCreatedAtBefore(BookingStatus status, LocalDateTime createdBefore);
+
+    /** Кандидаты на напоминание: подтверждённые, ещё без напоминания, в ближайшие дни */
+    List<Booking> findByStatusAndReminderSentAtIsNullAndDateBetween(BookingStatus status, LocalDate from, LocalDate to);
 }
