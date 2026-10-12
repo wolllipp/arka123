@@ -60,7 +60,6 @@ export default function Hero({ ready }) {
           <img src="/assets/img/p01.jpg" alt="Зал АРКА 123 на закате: два арочных окна с видом на Национальную библиотеку" />
         </div>
         <div className="window__caption">
-          <p className="eyebrow" style={{ color: "rgba(255,255,255,.8)" }}>Вид из окна</p>
           <p className="h1">Библиотека — прямо напротив. В каждом кадре вашего события.</p>
         </div>
       </div>

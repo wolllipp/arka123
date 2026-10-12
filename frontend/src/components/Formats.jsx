@@ -4,8 +4,7 @@ export default function Formats() {
   return (
     <section className="section" id="formats">
       <div className="wrap">
-        <p className="eyebrow reveal">Наши услуги</p>
-        <h2 className="h1 reveal" style={{ marginTop: 12, maxWidth: "16ch" }}>Один зал. Любой формат.</h2>
+        <h2 className="h1 reveal">Один зал. Любой&nbsp;формат.</h2>
         <div className="formats">
           {FORMATS.map((f) => (
             <article className="format reveal" key={f.title}>

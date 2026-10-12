@@ -4,8 +4,7 @@ export default function Tariffs() {
   return (
     <section className="section tariffs-sec" id="tariffs">
       <div className="wrap">
-        <p className="eyebrow reveal">Тарифы</p>
-        <h2 className="h1 reveal" style={{ marginTop: 12 }}>Платите за время, а не за лишнее.</h2>
+        <h2 className="h1 reveal">Платите за время, а не за лишнее.</h2>
         <div className="tariffs">
           {TARIFFS.map((t) => (
             <article className={"tariff reveal" + (t.main ? " tariff--main" : "")} key={t.title}>

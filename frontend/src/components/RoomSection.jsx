@@ -84,8 +84,7 @@ export default function RoomSection() {
     <section className="room" id="room">
       <div className="wrap room__head">
         <div>
-          <p className="eyebrow">Зал в 3D</p>
-          <h2 className="h1" style={{ marginTop: 12 }}>Покрутите. Расставьте.<br />Представьте своё событие.</h2>
+          <h2 className="h1">Покрутите. Расставьте.<br />Представьте своё событие.</h2>
         </div>
         <p className="lead">Модель собрана по реальным размерам зала. Переключайте рассадку и время суток — и посмотрите, как свет из арок ложится на пол.</p>
       </div>

@@ -37,8 +37,7 @@ export default function Gallery() {
     <section className="section gallery" id="gallery">
       <div className="wrap row-head">
         <div>
-          <p className="eyebrow reveal">Фотогалерея</p>
-          <h2 className="h1 reveal" style={{ marginTop: 12 }}>Зал в разное время дня.</h2>
+          <h2 className="h1 reveal">Зал в разное время дня.</h2>
         </div>
         <div className="gallery__nav">
           <button className="round-btn" type="button" aria-label="Назад" onClick={() => scrollBy(-1)}><Arrow back /></button>

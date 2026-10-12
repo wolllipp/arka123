@@ -4,8 +4,7 @@ export default function Reviews() {
   return (
     <section className="section" id="reviews" style={{ paddingTop: 0 }}>
       <div className="wrap">
-        <p className="eyebrow reveal">Отзывы</p>
-        <h2 className="h1 reveal" style={{ marginTop: 12 }}>Возвращаются со следующей группой.</h2>
+        <h2 className="h1 reveal">Возвращаются со следующей группой.</h2>
         <div className="reviews">
           {REVIEWS.map((r) => (
             <figure className={"review reveal" + (r.big ? " review--big" : "")} key={r.name}>
