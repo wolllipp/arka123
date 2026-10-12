@@ -6,7 +6,7 @@
 
 | Папка | Что внутри |
 |---|---|
-| `site-design/` | сайт: HTML/CSS/JS, GSAP, интерактивный 3D-зал на Three.js, бронирование через API |
+| `frontend/` | сайт: React + Vite, GSAP, интерактивный 3D-зал на Three.js, бронирование через API |
 | `arka-backend/` | API бронирования: Java 17, Spring Boot 4.1, PostgreSQL, Flyway, JWT, Redis |
 | `logo-motion/` | анимация логотипа (HyperFrames), готовый ролик в `renders/` |
 | `prompts/` | промты для анимации логотипа и фирменного персонажа |
@@ -22,11 +22,12 @@ set -a; . ./.env; set +a
 mvn spring-boot:run           # http://127.0.0.1:8090
 
 # 2. сайт (в другом терминале)
-cd site-design
-npx http-server@14.1.1 -p 8123 -c-1   # http://127.0.0.1:8123
+cd frontend
+npm install
+npm run dev                   # http://127.0.0.1:8123
 ```
 
-Подробности — в `arka-backend/README.md` и `site-design/README.md`.
+Подробности — в `arka-backend/README.md` и `frontend/README.md`.
 
 ## Статус по заданию
 
