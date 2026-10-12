@@ -9,17 +9,16 @@ function ArrowRight() {
 export default function Hero({ ready }) {
   const rootRef = useRef(null);
 
-  // заголовок спрятан под прелоадером и выезжает, когда прелоадер ушёл
+  // первый экран спрятан под прелоадером и проявляется на месте, когда прелоадер ушёл
   useGSAP(() => {
-    gsap.set(".hero__title .line > span", { yPercent: 110 });
-    gsap.set(".reveal-hero", { opacity: 0, y: 16 });
+    gsap.set([".hero__title .line > span", ".reveal-hero"], { opacity: 0 });
   }, { scope: rootRef });
 
   useGSAP(() => {
     if (!ready) return;
-    gsap.timeline({ delay: 0.1 })
-      .to(".hero__title .line > span", { yPercent: 0, duration: 1.0, ease: "expo.out", stagger: 0.08 }, 0)
-      .to(".reveal-hero", { opacity: 1, y: 0, duration: 0.7, ease: "power3.out", stagger: 0.08 }, 0.3);
+    gsap.timeline({ delay: 0.05 })
+      .to(".hero__title .line > span", { opacity: 1, duration: 0.9, ease: "power2.out", stagger: 0.12 }, 0)
+      .to(".reveal-hero", { opacity: 1, duration: 0.8, ease: "power2.out", stagger: 0.1 }, 0.35);
   }, { scope: rootRef, dependencies: [ready] });
 
   // окно: pin + scrub, на мобильном арка шире
