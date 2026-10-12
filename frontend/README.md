@@ -15,6 +15,7 @@ API бронирования — `../arka-backend` на `http://127.0.0.1:8090/a
 
 - `src/pages/HomePage.jsx` — лендинг из секций
 - `src/pages/BookingPage.jsx` — страница брони `/booking/:code` (ссылка из письма): детали и отмена
+- `src/pages/AdminPage.jsx`, `AdminLoginPage.jsx` — панель администратора `/admin`: сводка, фильтры, поиск, подтверждение и отмена броней; `src/admin/auth.js` — сессия (JWT) и запросы к `/api/admin/**`
 - `src/components/` — секции: `Hero` (раскрытие окна на скролле), `About`, `RoomSection`, `Formats`, `Tariffs`, `Gallery`, `Reviews`, `Booking`, `Place`, `Footer`; `Preloader` и `Nav`
 - `src/components/booking/` — бронирование: дни и часы из API, цена с сервера, форма, отмена по коду; `WaitOverlay` — ожидание вместо спиннера
 - `src/three/createRoom.js` — 3D-зал (Three.js): срез стен, 4 рассадки, день/закат, вид изнутри; грузится отдельным чанком
