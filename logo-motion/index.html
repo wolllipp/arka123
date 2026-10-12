@@ -1,0 +1,257 @@
+<!doctype html>
+<html lang="ru">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=1920, height=1080" />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Manrope:wght@800&family=Roboto:wght@400&display=block"
+      rel="stylesheet"
+    />
+    <script src="https://cdn.jsdelivr.net/npm/gsap@3.14.2/dist/gsap.min.js"></script>
+    <style>
+      :root {
+        --ink: #213443;
+        --paper: #f4f0e8;
+      }
+      * {
+        margin: 0;
+        padding: 0;
+        box-sizing: border-box;
+      }
+      html,
+      body {
+        margin: 0;
+        width: 1920px;
+        height: 1080px;
+        overflow: hidden;
+        background: var(--paper);
+      }
+      #root {
+        position: relative;
+        width: 100%;
+        height: 100%;
+        overflow: hidden;
+        background: var(--paper);
+      }
+      #stage {
+        position: absolute;
+        inset: 0;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+      }
+      #lockup {
+        display: flex;
+        align-items: flex-end;
+        gap: 46px;
+      }
+      #markWrap {
+        width: 411px;
+        height: 470px;
+        flex: none;
+      }
+      #mark {
+        width: 100%;
+        height: 100%;
+        overflow: visible;
+      }
+      .stroke {
+        fill: none;
+        stroke: var(--ink);
+        stroke-width: 52;
+        stroke-linejoin: miter;
+        stroke-linecap: butt;
+        stroke-dasharray: 1 1;
+        stroke-dashoffset: 1;
+      }
+      #text {
+        width: 980px;
+        padding-bottom: 6px;
+        color: var(--ink);
+      }
+      #word {
+        font-family: Manrope, sans-serif;
+        font-weight: 800;
+        font-size: 208px;
+        line-height: 0.86;
+        white-space: nowrap;
+        overflow: hidden;
+        padding-top: 0.06em;
+        margin-bottom: 26px;
+      }
+      #word .ch {
+        display: inline-block;
+      }
+      #word .sp {
+        display: inline-block;
+        width: 0.26em;
+      }
+      #slogan {
+        font-family: Roboto, sans-serif;
+        font-weight: 400;
+        font-size: 74px;
+        line-height: 1.08;
+        letter-spacing: 0.005em;
+      }
+      #slogan .line {
+        display: block;
+      }
+    </style>
+  </head>
+  <body>
+    <div
+      id="root"
+      data-composition-id="main"
+      data-start="0"
+      data-duration="5"
+      data-width="1920"
+      data-height="1080"
+    >
+      <div id="stage" class="clip" data-start="0" data-duration="5" data-track-index="0">
+        <div id="lockup">
+          <div id="markWrap">
+            <svg id="mark" viewBox="0 0 674 770">
+              <defs>
+                <clipPath id="inner">
+                  <path d="M 53 718 L 53 336 A 284 284 0 0 1 621 336 L 621 718 Z" />
+                </clipPath>
+                <linearGradient id="sun" x1="0" y1="1" x2="0" y2="0">
+                  <stop offset="0" stop-color="#E9965A" />
+                  <stop offset="0.45" stop-color="#F6C27A" />
+                  <stop offset="1" stop-color="#F4F0E8" stop-opacity="0" />
+                </linearGradient>
+              </defs>
+
+              <!-- свет заката в проёме -->
+              <g id="light" clip-path="url(#inner)" opacity="0">
+                <g id="lightMove">
+                  <rect x="0" y="0" width="674" height="770" fill="url(#sun)" />
+                  <image
+                    id="library"
+                    href="assets/library.png"
+                    x="-269"
+                    y="-90"
+                    width="2006"
+                    height="1129"
+                    preserveAspectRatio="none"
+                    opacity="0.4"
+                    style="mix-blend-mode: multiply"
+                  />
+                </g>
+              </g>
+
+              <!-- основание: из центра в стороны -->
+              <path id="baseL" class="stroke" pathLength="1" d="M 337 744 L 0 744" />
+              <path id="baseR" class="stroke" pathLength="1" d="M 337 744 L 674 744" />
+              <!-- стены и свод: навстречу друг другу -->
+              <path id="wallL" class="stroke" pathLength="1" d="M 27 744 L 27 336 A 310 310 0 0 1 337 26" />
+              <path id="wallR" class="stroke" pathLength="1" d="M 647 744 L 647 336 A 310 310 0 0 0 337 26" />
+              <!-- «1» — колонна арки -->
+              <rect id="oneStem" x="150" y="304" width="55" height="466" fill="#213443" />
+              <polygon id="oneFlag" points="135,304 151,304 151,364 84,364" fill="#213443" />
+              <!-- «2» и «3» -->
+              <g id="d2g">
+                <path id="d2" class="stroke" pathLength="1" d="M 252 406 L 252 376 A 51 51 0 1 1 342 409 L 240 614 L 381 614" />
+              </g>
+              <g id="d3g">
+                <path id="d3" class="stroke" pathLength="1" style="stroke-linejoin: bevel" d="M 416 327 L 578 327 L 459 466 A 78 78 0 1 1 414 537" />
+              </g>
+              <!-- блик по контуру -->
+              <path
+                id="glint"
+                d="M 27 744 L 27 336 A 310 310 0 0 1 647 336 L 647 744"
+                fill="none"
+                stroke="#ffffff"
+                stroke-width="52"
+                stroke-linecap="butt"
+                pathLength="1"
+                stroke-dasharray="0.09 2"
+                stroke-dashoffset="0.09"
+                opacity="0"
+              />
+            </svg>
+          </div>
+          <div id="text">
+            <div id="word">
+              <span class="ch">А</span><span class="ch">Р</span><span class="ch">К</span><span class="ch">А</span><span class="sp"></span><span class="ch">1</span><span class="ch">2</span><span class="ch">3</span>
+            </div>
+            <div id="slogan">
+              <span class="line">Встречаемся напротив</span>
+              <span class="line">Библиотеки.</span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <script>
+      const tl = gsap.timeline({ paused: true });
+      // знак стартует по центру кадра: сдвиг = (ширина текста + gap) / 2
+      const SHIFT = (980 + 46) / 2;
+
+      // начальные состояния — вне таймлайна, чтобы кадр 0 был чистым
+      gsap.set("#markWrap", { x: SHIFT });
+      gsap.set("#oneStem", { scaleY: 0, transformOrigin: "50% 100%" });
+      gsap.set("#oneFlag", { opacity: 0, x: 18, y: 10 });
+      gsap.set(["#d2g", "#d3g"], { y: 14, opacity: 0 });
+      gsap.set("#lightMove", { y: 260 });
+      // трекинг 0.08em → 0: каждая буква сдвинута по x пропорционально индексу
+      gsap.set("#word .ch, #word .sp", { yPercent: 105, x: (i) => i * 17 });
+      gsap.set("#slogan .line", { opacity: 0, y: 12, filter: "blur(4px)" });
+
+      // base — фундамент из центра
+      tl.addLabel("base", 0)
+        .to(["#baseL", "#baseR"], { strokeDashoffset: 0, duration: 0.5, ease: "expo.out" }, "base");
+
+      // column — «1» вырастает из основания
+      tl.addLabel("column", 0.3)
+        .to("#oneStem", { scaleY: 1, duration: 0.55, ease: "power4.out" }, "column")
+        .to("#oneFlag", { opacity: 1, x: 0, y: 0, duration: 0.4, ease: "power3.out" }, "column+=0.32");
+
+      // vault — стены и свод смыкаются наверху
+      tl.addLabel("vault", 0.5)
+        .to(["#wallL", "#wallR"], { strokeDashoffset: 0, duration: 0.85, ease: "power3.inOut" }, "vault")
+        .to("#mark", { scale: 1.015, duration: 0.17, ease: "power2.out", transformOrigin: "50% 100%" }, "vault+=0.85")
+        .to("#mark", { scale: 1, duration: 0.3, ease: "power2.inOut" }, "vault+=1.02");
+
+      // digits — «2» и «3» прорисовываются
+      tl.addLabel("digits", 1.05)
+        .to("#d2", { strokeDashoffset: 0, duration: 0.6, ease: "power3.out" }, "digits")
+        .to("#d2g", { y: 0, opacity: 1, duration: 0.45, ease: "power3.out" }, "digits")
+        .to("#d3", { strokeDashoffset: 0, duration: 0.6, ease: "power3.out" }, "digits+=0.08")
+        .to("#d3g", { y: 0, opacity: 1, duration: 0.45, ease: "power3.out" }, "digits+=0.08");
+
+      // light — в проёме вспыхивает закат и гаснет
+      tl.addLabel("light", 1.45)
+        .to("#light", { opacity: 0.85, duration: 0.45, ease: "power2.out" }, "light")
+        .to("#lightMove", { y: 0, duration: 0.9, ease: "expo.out" }, "light")
+        .to("#light", { opacity: 0, duration: 0.55, ease: "power2.inOut" }, "light+=0.6");
+
+      // shift — знак уезжает на место в горизонтальном логотипе
+      tl.addLabel("shift", 2.05)
+        .to("#markWrap", { x: 0, duration: 0.85, ease: "expo.inOut" }, "shift");
+
+      // wordmark — буквы выходят из-под маски
+      tl.addLabel("wordmark", 2.4)
+        .to("#word .ch, #word .sp", { yPercent: 0, duration: 0.8, ease: "expo.out", stagger: 0.035 }, "wordmark")
+        .to("#word .ch, #word .sp", { x: 0, duration: 1.0, ease: "expo.out" }, "wordmark");
+
+      // slogan — проявляется по строкам
+      tl.addLabel("slogan", 3.05)
+        .to("#slogan .line", { opacity: 1, y: 0, filter: "blur(0px)", duration: 0.6, ease: "power3.out", stagger: 0.12 }, "slogan");
+
+      // glint — один блик по контуру арки
+      tl.addLabel("glint", 3.8)
+        .to("#glint", { opacity: 0.45, duration: 0.15, ease: "none" }, "glint")
+        .fromTo("#glint", { strokeDashoffset: 0.09 }, { strokeDashoffset: -1, duration: 0.85, ease: "power2.inOut" }, "glint")
+        .to("#glint", { opacity: 0, duration: 0.15, ease: "none" }, "glint+=0.7");
+
+      tl.set({}, {}, 5);
+
+      window.__timelines = window.__timelines || {};
+      window.__timelines["main"] = tl;
+      tl.seek(0);
+    </script>
+  </body>
+</html>
