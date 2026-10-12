@@ -3,7 +3,7 @@ export default function Place() {
     <section className="section" id="place" style={{ paddingTop: 0 }}>
       <div className="wrap">
         <p className="eyebrow reveal">Как добраться</p>
-        <h2 className="h1 reveal" style={{ marginTop: 12 }}>Пройдите через арку — и вы на месте.</h2>
+        <h2 className="h1 reveal" style={{ marginTop: 12 }}>Пройдите через арку&nbsp;— и&nbsp;вы на&nbsp;месте.</h2>
         <div className="place">
           <div className="place__img reveal"><img src="/assets/img/p16.jpg" alt="Променад у здания на Мстиславца, 10" loading="lazy" /></div>
           <div className="place__card reveal">
