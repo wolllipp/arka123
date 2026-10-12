@@ -735,3 +735,9 @@ symbol .fill,
   .nav { background: var(--paper); backdrop-filter: none; }
   .dock, .room__info { background: var(--night-2); backdrop-filter: none; }
 }
+
+/* ---------- страница брони по ссылке из письма ---------- */
+.booking-page { min-height: 100vh; padding-top: clamp(32px, 6vw, 64px); }
+.booking-page__logo { display: inline-flex; align-items: center; gap: 10px; margin-bottom: 32px; font-family: var(--f-display); font-weight: 800; font-size: 19px; letter-spacing: -0.02em; }
+.booking-page__logo .mark { width: 26px; height: 30px; }
+.booking-page .book .h1 { color: var(--paper); }

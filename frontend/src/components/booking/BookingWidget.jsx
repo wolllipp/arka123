@@ -261,8 +261,8 @@ export default function BookingWidget() {
             <label>Имя<input autoFocus autoComplete="name" value={form.contactName} onChange={(e) => setField("contactName", e.target.value)} aria-invalid={invalid.contactName || undefined} /></label>
             <label>Телефон<input type="tel" autoComplete="tel" placeholder="+375 29 000-00-00" value={form.contactPhone} onChange={(e) => setField("contactPhone", e.target.value)} aria-invalid={invalid.contactPhone || undefined} /></label>
           </div>
-          <label><span>Email <span className="bform__opt">необязательно</span></span>
-            <input type="email" autoComplete="email" value={form.contactEmail} onChange={(e) => setField("contactEmail", e.target.value)} aria-invalid={invalid.contactEmail || undefined} />
+          <label><span>Email <span className="bform__opt">пришлём подтверждение и напоминание</span></span>
+            <input type="email" autoComplete="email" required value={form.contactEmail} onChange={(e) => setField("contactEmail", e.target.value)} aria-invalid={invalid.contactEmail || undefined} />
           </label>
           <label><span>Комментарий <span className="bform__opt">необязательно</span></span>
             <textarea rows="2" value={form.comment} onChange={(e) => setField("comment", e.target.value)} />
@@ -282,7 +282,7 @@ export default function BookingWidget() {
         <div className="step bdone">
           <p className="eyebrow">Заявка принята</p>
           <p className="h2">{`${dayMonth(booking.date)}, ${booking.startTime.slice(0, 5)}–${booking.endTime.slice(0, 5)} · ${money(booking.totalPrice)}`}</p>
-          <p className="bdone__text">Подтвердим в течение 15 минут по телефону. Код брони — по нему её можно отменить онлайн не позднее чем за сутки.</p>
+          <p className="bdone__text">Письмо с деталями отправили на <b>{booking.contactEmail}</b>. Подтвердим в течение 15 минут по телефону. Код брони — по нему её можно отменить онлайн не позднее чем за сутки.</p>
           <code className="bdone__code">{booking.code}</code>
           <div className="bdone__actions">
             <button className="btn btn--sun" type="button" onClick={startOver}>Ещё одна бронь</button>
