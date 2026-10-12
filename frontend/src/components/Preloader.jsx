@@ -6,6 +6,8 @@ import { AnimatedMark } from "./Mark";
 /* Часть 1 ролика (intro.mp4, ×1.25) играет при загрузке и сама уходит в белый;
    если страница ещё не готова — по кругу крутится часть 2 (wait-loop.mp4).
    Если автозапуск видео заблокирован — тот же знак рисуется SVG-анимацией. */
+const INTRO_EXIT_AT = 2.75; // секунда intro.mp4, после которой прелоадер растворяется
+
 export default function Preloader({ onDone }) {
   const rootRef = useRef(null);
   const introRef = useRef(null);
@@ -28,6 +30,15 @@ export default function Preloader({ onDone }) {
     });
     const introDone = new Promise((r) => {
       if (reduce) return r();
+      // не ждём хвост ролика: логотип собран к ~2,3 с, дальше в видео ~1,5 с неподвижной паузы —
+      // уходим после короткой паузы на чтение надписи
+      const onTime = () => {
+        if (intro.currentTime >= INTRO_EXIT_AT) {
+          intro.removeEventListener("timeupdate", onTime);
+          r();
+        }
+      };
+      intro.addEventListener("timeupdate", onTime);
       intro.addEventListener("ended", r, { once: true });
       intro.addEventListener("error", r, { once: true });
       intro.play().catch(() => setFallback({ kind: "intro", done: r }));
@@ -44,7 +55,7 @@ export default function Preloader({ onDone }) {
       if (cancelled) return;
       gsap.to(rootRef.current, {
         opacity: 0,
-        duration: 0.35,
+        duration: 0.4,
         ease: "power1.out",
         onComplete: () => {
           intro.pause();
