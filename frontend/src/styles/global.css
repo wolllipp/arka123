@@ -716,6 +716,39 @@ symbol .fill,
 @media (max-width: 860px) { .place { grid-template-columns: 1fr; } }
 .place__img { border-radius: 32px; overflow: hidden; aspect-ratio: 4 / 3; }
 .place__img img { width: 100%; height: 100%; object-fit: cover; }
+/* карта «Как добраться» — та же скруглённая карточка, что и фото */
+.place__map { position: relative; border-radius: 32px; overflow: hidden; aspect-ratio: 4 / 3; background: #ece6da; isolation: isolate; }
+.place__map-canvas { position: absolute !important; inset: 0; } /* maplibre-gl.css ставит контейнеру position: relative — без !important высота схлопывается в 0 */
+.place__map-fallback { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; }
+.place__actions { display: flex; gap: 10px; flex-wrap: wrap; }
+.map-pin {
+  display: inline-flex; align-items: center; gap: 8px; white-space: nowrap;
+  font-family: var(--f-text); font-weight: 700; letter-spacing: -0.01em;
+  transform-origin: 50% 100%;
+}
+.map-pin--arka {
+  height: 44px; padding: 0 16px 0 10px; border-radius: 999px;
+  background: var(--ink); color: var(--paper); font-family: var(--f-display); font-size: 15px; font-weight: 800;
+  box-shadow: 0 10px 30px rgba(31, 47, 59, 0.35);
+}
+.map-pin--arka .mark { display: inline-flex; width: 22px; height: 25px; color: var(--paper); }
+.map-pin--arka .mark svg { width: 100%; height: 100%; overflow: visible; }
+.map-pin--arka::after { /* хвостик метки */
+  content: ""; position: absolute; left: 50%; bottom: -6px; translate: -50% 0;
+  border: 7px solid transparent; border-bottom: 0; border-top-color: var(--ink);
+}
+.map-pin--lib {
+  height: 32px; padding: 0 12px 0 8px; border-radius: 999px;
+  background: rgba(244, 240, 232, 0.92); color: var(--ink); font-size: 12px;
+  box-shadow: 0 6px 18px rgba(31, 47, 59, 0.18);
+}
+.map-pin--lib i { width: 14px; height: 14px; border-radius: 50%; background: var(--sun); box-shadow: 0 0 0 4px rgba(242, 179, 107, 0.3); }
+/* элементы MapLibre — в стиле сайта */
+.place__map .maplibregl-ctrl-group { border-radius: 14px; overflow: hidden; box-shadow: 0 6px 18px rgba(31, 47, 59, 0.15); background: rgba(244, 240, 232, 0.92); }
+.place__map .maplibregl-ctrl-group button { width: 36px; height: 36px; }
+.place__map .maplibregl-ctrl-top-right { top: 6px; right: 6px; }
+.place__map .maplibregl-ctrl-attrib { font-size: 11px; background: rgba(244, 240, 232, 0.8); }
+.place__map .maplibregl-cooperative-gesture-screen { font-family: var(--f-text); font-size: 15px; background: rgba(31, 47, 59, 0.55); }
 .place__card { border-radius: 32px; background: var(--paper-2); padding: 36px; display: flex; flex-direction: column; justify-content: space-between; gap: 32px; }
 .place__rows { display: grid; gap: 20px; }
 .place__rows div { display: grid; gap: 2px; }
