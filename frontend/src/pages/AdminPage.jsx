@@ -92,7 +92,7 @@ export default function AdminPage() {
     setBusy(true);
     try {
       await adminApi(`/bookings/${booking.id}/${action}`, { method: "POST" });
-      showToast(action === "confirm" ? "Бронь подтверждена — гостю ушло письмо" : "Бронь отменена — гостю ушло письмо");
+      showToast(action === "confirm" ? "Бронь подтверждена" : "Бронь отменена");
       await load();
     } catch (e) {
       if (e.status === 401 || e.status === 403) onAuthError(e);
@@ -196,7 +196,7 @@ export default function AdminPage() {
       {confirmCancel && (
         <ConfirmDialog
           title="Отменить бронь?"
-          text={`${confirmCancel.contactName}, ${dayTitle(confirmCancel.date).toLowerCase()}, ${confirmCancel.startTime.slice(0, 5)}–${confirmCancel.endTime.slice(0, 5)}. Время освободится, гость получит письмо об отмене.`}
+          text={`${confirmCancel.contactName}, ${dayTitle(confirmCancel.date).toLowerCase()}, ${confirmCancel.startTime.slice(0, 5)}–${confirmCancel.endTime.slice(0, 5)}. Время освободится, и его смогут забронировать другие.`}
           confirmLabel="Отменить бронь"
           onConfirm={() => act(confirmCancel, "cancel")}
           onClose={() => setConfirmCancel(null)}

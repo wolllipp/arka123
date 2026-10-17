@@ -341,7 +341,7 @@ export default function BookingWidget() {
               </span>
             </label>
           </div>
-          <label><span>Email <span className="bform__opt">пришлём подтверждение и напоминание</span></span>
+          <label><span>Email <span className="bform__opt">для связи по брони</span></span>
             <input type="email" autoComplete="email" required value={form.contactEmail} onChange={(e) => setField("contactEmail", e.target.value)} aria-invalid={invalid.contactEmail || undefined} />
           </label>
           <label><span>Комментарий <span className="bform__opt">необязательно</span></span>
@@ -362,7 +362,7 @@ export default function BookingWidget() {
         <div className="step bdone">
           <p className="eyebrow">{cancelled ? "Бронь отменена" : "Заявка принята"}</p>
           <p className="h2">{`${dayMonth(booking.date)}, ${booking.startTime.slice(0, 5)}–${booking.endTime.slice(0, 5)} · ${money(booking.totalPrice)}`}</p>
-          <p className="bdone__text">Письмо с деталями и ссылкой на бронь отправили на <b>{booking.contactEmail}</b>. Подтвердим в течение 15 минут по телефону.</p>
+          <p className="bdone__text">Подтвердим в течение 15 минут по телефону. Сохраните страницу брони или код ниже — по ним можно посмотреть детали и отменить бронь.</p>
           <code className="bdone__code">{booking.code}</code>
           {!cancelled && (
             <div className="bdone__actions">

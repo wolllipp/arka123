@@ -14,7 +14,7 @@ const STATUS = {
   CANCELLED: "Отменена",
 };
 
-/** Страница брони по ссылке из письма: детали и отмена по коду */
+/** Страница брони по ссылке (с экрана успеха или из письма): детали и отмена по коду */
 export default function BookingPage() {
   const { code } = useParams();
   const [booking, setBooking] = useState(null);
@@ -25,7 +25,7 @@ export default function BookingPage() {
   const [layouts, setLayouts] = useState({});
 
   useEffect(() => {
-    api(`/bookings/${code}`).then(setBooking).catch((e) => setError(e.status === 404 || e.status === 400 ? "Бронь не найдена — проверьте ссылку из письма." : e.error));
+    api(`/bookings/${code}`).then(setBooking).catch((e) => setError(e.status === 404 || e.status === 400 ? "Бронь не найдена — проверьте ссылку или код брони." : e.error));
     // названия форматов рассадки — из каталога, как в форме брони
     api("/catalog").then((c) => setLayouts(Object.fromEntries(c.layouts.map((l) => [l.code, l.title])))).catch(() => {});
   }, [code]);
@@ -36,7 +36,7 @@ export default function BookingPage() {
     setMsg("");
     try {
       setBooking(await api(`/bookings/${code}/cancel`, { method: "POST" }));
-      setMsg("Бронь отменена, время снова свободно. Письмо с подтверждением отмены уже в пути.");
+      setMsg("Бронь отменена, время снова свободно.");
     } catch (e) {
       setMsg(e.error);
     } finally {
