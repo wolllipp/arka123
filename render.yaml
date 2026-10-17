@@ -13,7 +13,7 @@ services:
         destination: /index.html
     envVars:
       - key: VITE_API_URL
-        value: https://arka-backend.onrender.com/api
+        value: https://arka-backend-mav4.onrender.com/api
 
   - type: web
     name: arka-backend
@@ -44,9 +44,9 @@ services:
       - key: ADMIN_PASSWORD
         sync: false
       - key: CORS_ORIGINS
-        value: https://arka123.onrender.com
+        value: https://arka123-hzoq.onrender.com
       - key: SITE_URL
-        value: https://arka123.onrender.com
+        value: https://arka123-hzoq.onrender.com
       # письма: без SMTP бронь сохраняется, письмо просто не уходит.
       # Для отправки добавьте SMTP_HOST, SMTP_PORT, SMTP_AUTH, SMTP_STARTTLS, SMTP_USERNAME, SMTP_PASSWORD, MAIL_FROM (см. arka-backend/.env.example)
 
