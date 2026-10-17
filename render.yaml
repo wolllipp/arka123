@@ -1,5 +1,5 @@
 # Render Blueprint: сайт, API, PostgreSQL и Redis одной кнопкой (Dashboard → New → Blueprint → этот репозиторий).
-# Если Render выдаст сервисам другие адреса, поправьте VITE_API_URL, CORS_ORIGINS и SITE_URL и пересоберите.
+# Адреса ниже Render выдал этому проекту; в новом Blueprint поправьте VITE_API_URL, CORS_ORIGINS и SITE_URL.
 services:
   - type: web
     name: arka123
