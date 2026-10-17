@@ -1,4 +1,5 @@
 import { EXTRAS, TARIFFS } from "../data/content";
+import { chooseTariff } from "../lib/booking";
 
 export default function Tariffs() {
   return (
@@ -14,7 +15,7 @@ export default function Tariffs() {
               <div className="tariff__price">{t.price}<small>{t.unit}</small></div>
               <p className="muted">{t.note}</p>
               <ul>{t.items.map((i) => <li key={i}>{i}</li>)}</ul>
-              <a className={t.main ? "btn" : "btn btn--ghost"} href="#book">{t.cta}</a>
+              <a className={t.main ? "btn" : "btn btn--ghost"} href="#book" onClick={() => chooseTariff(t)}>{t.cta}</a>
             </article>
           ))}
         </div>

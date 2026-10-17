@@ -4,6 +4,9 @@ import { api } from "../api/client";
 import { dayMonth, money } from "../lib/format";
 import { Mark } from "../components/Mark";
 import WaitOverlay from "../components/booking/WaitOverlay";
+import ConfirmDialog from "../components/ConfirmDialog";
+import { canCancelOnline, guestsWord, icsHref } from "../lib/booking";
+import { PHONE } from "../data/content";
 
 const STATUS = {
   PENDING: "Ждёт подтверждения",
@@ -18,12 +21,17 @@ export default function BookingPage() {
   const [error, setError] = useState("");
   const [msg, setMsg] = useState("");
   const [waiting, setWaiting] = useState(false);
+  const [confirming, setConfirming] = useState(false);
+  const [layouts, setLayouts] = useState({});
 
   useEffect(() => {
     api(`/bookings/${code}`).then(setBooking).catch((e) => setError(e.status === 404 || e.status === 400 ? "Бронь не найдена — проверьте ссылку из письма." : e.error));
+    // названия форматов рассадки — из каталога, как в форме брони
+    api("/catalog").then((c) => setLayouts(Object.fromEntries(c.layouts.map((l) => [l.code, l.title])))).catch(() => {});
   }, [code]);
 
   const cancel = async () => {
+    setConfirming(false);
     setWaiting(true);
     setMsg("");
     try {
@@ -52,23 +60,42 @@ export default function BookingPage() {
           </div>
           <div className="cal">
             {waiting && <WaitOverlay text="Отменяем бронь…" />}
+            {confirming && (
+              <ConfirmDialog
+                title="Отменить бронь?"
+                text={`${dayMonth(booking.date)}, ${booking.startTime.slice(0, 5)}–${booking.endTime.slice(0, 5)}. Время освободится, и его смогут забронировать другие.`}
+                confirmLabel="Отменить бронь"
+                onConfirm={cancel}
+                onClose={() => setConfirming(false)}
+              />
+            )}
             {error && <p className="cal__msg">{error}</p>}
             {booking && (
               <div className="bdone">
                 <p className="eyebrow">{STATUS[booking.status]}</p>
                 <p className="h2">{money(booking.totalPrice)}</p>
                 <p className="bdone__text">
-                  {booking.hours} ч · тариф «{booking.tariffName}» · {booking.guests} гостей
+                  {booking.hours} ч · тариф «{booking.tariffName}» · {booking.guests} {guestsWord(booking.guests)}
+                  {layouts[booking.layout] && <> · {layouts[booking.layout].toLowerCase()}</>}
                   {booking.services.length > 0 && <><br />{booking.services.map((s) => s.name).join(", ")}</>}
+                  <br />На имя {booking.contactName}, {booking.contactPhone}
                 </p>
+                {booking.status === "PENDING" && <p className="bdone__text">Администратор подтвердит бронь по телефону в течение 15 минут в рабочее время.</p>}
                 <code className="bdone__code">{booking.code}</code>
                 <div className="bdone__actions">
-                  <Link className="btn btn--sun" to="/">На главную</Link>
                   {booking.status !== "CANCELLED" && (
-                    <button className="btn btn--ghost bdone__cancel" type="button" onClick={cancel}>Отменить бронь</button>
+                    <a className="btn btn--sun" href={icsHref(booking, location.href)} download="arka123.ics">Добавить в календарь</a>
                   )}
+                  <Link className="btn btn--ghost bdone__cancel" to="/">На главную</Link>
                 </div>
                 <p className="cal__msg" role="status">{msg}</p>
+                {booking.status !== "CANCELLED" && (
+                  <div className="bdone__links">
+                    {canCancelOnline(booking)
+                      ? <button className="bdone__link" type="button" onClick={() => setConfirming(true)}>Отменить бронь</button>
+                      : <span>До начала меньше суток — отменить можно по телефону <a href={PHONE.href}>{PHONE.text}</a></span>}
+                  </div>
+                )}
               </div>
             )}
           </div>

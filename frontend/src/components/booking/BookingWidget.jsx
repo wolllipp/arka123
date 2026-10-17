@@ -1,10 +1,15 @@
 import { useCallback, useEffect, useRef, useState } from "react";
+import { Link } from "react-router-dom";
 import { api } from "../../api/client";
 import { MONTHS_NOM, WEEKDAYS, dayMonth, hh, hoursWord, isoDate, money, parseDate } from "../../lib/format";
 import WaitOverlay from "./WaitOverlay";
 import { PHONE_DEFAULT, PHONE_EXAMPLE, isPhoneComplete, nextPhoneValue } from "../../lib/phone";
+import { canCancelOnline, icsHref, onTariffChosen } from "../../lib/booking";
+import { PHONE } from "../../data/content";
+import ConfirmDialog from "../ConfirmDialog";
 
-const DAYS_AHEAD = 14;
+const DAYS_PAGE = 14; // календарь листается по две недели
+const HORIZON_DAYS = 90; // как bookingHorizonDays в /catalog
 const EMPTY_FORM = { layout: "LECTURE", guests: 10, services: [], contactName: "", contactPhone: PHONE_DEFAULT, contactEmail: "", comment: "" };
 
 /** Ожидание показываем хотя бы ~один цикл знака, чтобы оверлей не мигал */
@@ -28,9 +33,13 @@ export default function BookingWidget() {
   const [wait, setWait] = useState(null);
   const [booking, setBooking] = useState(null);
   const [cancelled, setCancelled] = useState(false);
+  const [confirmCancel, setConfirmCancel] = useState(false);
+  const [page, setPage] = useState(0);
+  const [preset, setPreset] = useState(null); // тариф из блока «Тарифы»: { title, hours }
   const quoteSeq = useRef(0);
 
   const minHours = catalog?.minHours ?? 2;
+  const lastPage = Math.floor(((catalog?.bookingHorizonDays ?? HORIZON_DAYS) - 1) / DAYS_PAGE);
   const hours = range ? range.end - range.start : 0;
   const say = (key, text) => setMsg((m) => ({ ...m, [key]: text }));
 
@@ -48,35 +57,60 @@ export default function BookingWidget() {
     }
   }, []);
 
-  const loadDays = useCallback(async () => {
+  const loadDays = useCallback(async (pg) => {
     const from = new Date();
-    const to = new Date();
-    to.setDate(to.getDate() + DAYS_AHEAD - 1);
+    from.setDate(from.getDate() + pg * DAYS_PAGE);
+    const to = new Date(from);
+    to.setDate(to.getDate() + DAYS_PAGE - 1);
+    const limit = new Date();
+    limit.setDate(limit.getDate() + HORIZON_DAYS - 1);
     try {
-      const [cat, list] = await Promise.all([
-        api("/catalog"),
-        api(`/availability/calendar?from=${isoDate(from)}&to=${isoDate(to)}`),
-      ]);
-      setCatalog(cat);
+      const list = await api(`/availability/calendar?from=${isoDate(from)}&to=${isoDate(to < limit ? to : limit)}`);
       setDays(list);
       const first = list.find((d) => d.status === "FREE" || d.status === "PARTIAL");
       if (first) selectDay(first.date);
-      else say("pick", "На ближайшие две недели свободных окон нет — позвоните нам.");
+      else {
+        setDate(null);
+        setSlots([]);
+        setRange(null);
+        say("pick", "В эти две недели свободного времени нет — посмотрите следующие.");
+      }
     } catch (e) {
       say("pick", e.error);
     }
   }, [selectDay]);
 
   useEffect(() => {
-    // первичная загрузка календаря при монтировании
+    // первичная загрузка: каталог (форматы, услуги, правила) и первые две недели
+    api("/catalog").then(setCatalog).catch((e) => say("pick", e.error));
     // eslint-disable-next-line react-hooks/set-state-in-effect
-    loadDays();
+    loadDays(0);
   }, [loadDays]);
+
+  const goPage = (pg) => {
+    setPage(pg);
+    loadDays(pg);
+  };
+
+  // «Выбрать» в тарифе — календарь сразу отмечает его длительность от нажатого часа
+  useEffect(() => onTariffChosen((t) => {
+    setPreset(t);
+    setRange(null);
+    setStep((s) => (s === "form" ? "pick" : s));
+  }), []);
 
   /* ---------- часы: первый клик — начало, второй — последний час ---------- */
   const pickHour = (h) => {
     say("pick", "");
     if (!range || range.end - range.start > 1 || h <= range.start) {
+      if (preset) {
+        const span = slots.filter((s) => s.hour >= h && s.hour < h + preset.hours);
+        if (span.length === preset.hours && span.every((s) => s.free)) {
+          setRange({ start: h, end: h + preset.hours });
+          return;
+        }
+        say("pick", `С ${hh(h)} нет ${preset.hours} ${hoursWord(preset.hours)} подряд — выберите начало раньше или отметьте последний час сами.`);
+      }
       setRange({ start: h, end: h + 1 });
       return;
     }
@@ -158,6 +192,7 @@ export default function BookingWidget() {
 
   /* ---------- шаг 3 ---------- */
   const cancel = async () => {
+    setConfirmCancel(false);
     setWait("Отменяем бронь…");
     try {
       await atLeast(api(`/bookings/${booking.code}/cancel`, { method: "POST" }));
@@ -172,8 +207,9 @@ export default function BookingWidget() {
 
   const startOver = () => {
     setForm(EMPTY_FORM);
+    setPreset(null);
     setStep("pick");
-    loadDays();
+    loadDays(page);
   };
 
   const chosenLayout = catalog?.layouts.find((l) => l.code === form.layout);
@@ -187,16 +223,38 @@ export default function BookingWidget() {
   return (
     <div className="cal">
       {wait && <WaitOverlay text={wait} />}
+      {confirmCancel && booking && (
+        <ConfirmDialog
+          title="Отменить бронь?"
+          text={`${dayMonth(booking.date)}, ${booking.startTime.slice(0, 5)}–${booking.endTime.slice(0, 5)}. Время освободится, и его смогут забронировать другие.`}
+          confirmLabel="Отменить бронь"
+          onConfirm={cancel}
+          onClose={() => setConfirmCancel(false)}
+        />
+      )}
 
       {step === "pick" && (
         <div className="step">
-          <div className="cal__head"><span>{monthTitle}</span><span className="cal__hint">Нажмите начало, затем конец</span></div>
+          <div className="cal__head">
+            <div className="cal__nav">
+              <button type="button" className="cal__arrow" aria-label="Предыдущие две недели" disabled={page === 0} onClick={() => goPage(page - 1)}>‹</button>
+              <span>{monthTitle}</span>
+              <button type="button" className="cal__arrow" aria-label="Следующие две недели" disabled={page >= lastPage} onClick={() => goPage(page + 1)}>›</button>
+            </div>
+            {preset ? (
+              <span className="cal__hint">Тариф «{preset.title}»: нажмите час начала
+                <button type="button" className="cal__reset" aria-label="Выбрать часы вручную" onClick={() => { setPreset(null); setRange(null); }}>×</button>
+              </span>
+            ) : (
+              <span className="cal__hint">Нажмите первый и последний час</span>
+            )}
+          </div>
           <div className="days">
             {days.map((d) => {
               const dt = parseDate(d.date);
               const busy = d.status === "FULL" || d.status === "CLOSED";
               return (
-                <button key={d.date} type="button" className={"day" + (busy ? " is-busy" : "")} aria-pressed={d.date === date}
+                <button key={d.date} type="button" className={"day" + (busy ? " is-busy" : "")} aria-pressed={d.date === date} disabled={busy}
                   aria-label={`${dayMonth(d.date)}, свободно ${d.freeHours} ч`} onClick={() => selectDay(d.date)}>
                   {WEEKDAYS[dt.getDay()]}<b>{dt.getDate()}</b>
                 </button>
@@ -264,7 +322,7 @@ export default function BookingWidget() {
             })}
           </fieldset>
           <div className="bform__row">
-            <label>Имя<input autoFocus autoComplete="name" value={form.contactName} onChange={(e) => setField("contactName", e.target.value)} aria-invalid={invalid.contactName || undefined} /></label>
+            <label>Имя<input autoFocus={matchMedia("(pointer: fine)").matches} autoComplete="name" value={form.contactName} onChange={(e) => setField("contactName", e.target.value)} aria-invalid={invalid.contactName || undefined} /></label>
             <label>Телефон
               <span className="phone">
                 <input type="tel" inputMode="tel" autoComplete="tel" value={form.contactPhone}
@@ -295,15 +353,23 @@ export default function BookingWidget() {
 
       {step === "done" && booking && (
         <div className="step bdone">
-          <p className="eyebrow">Заявка принята</p>
+          <p className="eyebrow">{cancelled ? "Бронь отменена" : "Заявка принята"}</p>
           <p className="h2">{`${dayMonth(booking.date)}, ${booking.startTime.slice(0, 5)}–${booking.endTime.slice(0, 5)} · ${money(booking.totalPrice)}`}</p>
-          <p className="bdone__text">Письмо с деталями отправили на <b>{booking.contactEmail}</b>. Подтвердим в течение 15 минут по телефону. Код брони — по нему её можно отменить онлайн не позднее чем за сутки.</p>
+          <p className="bdone__text">Письмо с деталями и ссылкой на бронь отправили на <b>{booking.contactEmail}</b>. Подтвердим в течение 15 минут по телефону.</p>
           <code className="bdone__code">{booking.code}</code>
-          <div className="bdone__actions">
-            <button className="btn btn--sun" type="button" onClick={startOver}>Ещё одна бронь</button>
-            {!cancelled && <button className="btn btn--ghost bdone__cancel" type="button" onClick={cancel}>Отменить бронь</button>}
-          </div>
+          {!cancelled && (
+            <div className="bdone__actions">
+              <Link className="btn btn--sun" to={`/booking/${booking.code}`}>Открыть бронь</Link>
+              <a className="btn btn--ghost bdone__cancel" href={icsHref(booking, `${location.origin}/booking/${booking.code}`)} download="arka123.ics">Добавить в календарь</a>
+            </div>
+          )}
           <p className="cal__msg" role="status">{msg.done}</p>
+          <div className="bdone__links">
+            {!cancelled && (canCancelOnline(booking)
+              ? <button className="bdone__link" type="button" onClick={() => setConfirmCancel(true)}>Отменить бронь</button>
+              : <span>До начала меньше суток — отменить можно по телефону <a href={PHONE.href}>{PHONE.text}</a></span>)}
+            <button className="bdone__link" type="button" onClick={startOver}>Новая бронь</button>
+          </div>
         </div>
       )}
     </div>

@@ -5,7 +5,7 @@ import { isoDate, money, parseDate } from "../lib/format";
 import { Mark } from "../components/Mark";
 import StatusBadge from "../components/admin/StatusBadge";
 import BookingDrawer from "../components/admin/BookingDrawer";
-import ConfirmDialog from "../components/admin/ConfirmDialog";
+import ConfirmDialog from "../components/ConfirmDialog";
 import "../styles/admin.css";
 
 const STATUSES = [
