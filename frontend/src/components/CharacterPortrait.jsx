@@ -1,6 +1,6 @@
 import { useState } from "react";
 
-const SRC = "/assets/character/mstislav-portrait.jpg";
+const SRC = "/assets/character/mstislav-cutout.webp"; // вырезан из фона, прозрачный
 
 /** Мстислав — фирменный персонаж (задание 2). Пока файла нет — блок не показывается */
 export default function CharacterPortrait() {
@@ -9,7 +9,7 @@ export default function CharacterPortrait() {
   return (
     <figure className="hero-cat">
       <div className="hero-cat__img">
-        <img src={SRC} alt="Мстислав — серый кот с брошью АРКА 123 на подоконнике напротив Библиотеки" loading="lazy" onError={() => setOk(false)} />
+        <img src={SRC} alt="Мстислав — дымчато-серый кот с кулоном-аркой «123» на ошейнике" loading="lazy" onError={() => setOk(false)} />
       </div>
       <figcaption>
         <b>Мстислав</b>
