@@ -34,6 +34,8 @@ export default function PlaceMap() {
           import("maplibre-gl/dist/maplibre-gl.css"),
         ]);
         if (cancelled) return;
+        // на телефоне карта ~300 px: отступы десктопа шире самой карты, и масштаб не подбирался
+        const narrow = el.clientWidth < 560;
         map = new maplibregl.Map({
           container: el,
           style: brandMapStyle(style),
@@ -53,7 +55,7 @@ export default function PlaceMap() {
         map.addControl(new maplibregl.NavigationControl({ showCompass: false }), "top-right");
         new maplibregl.Marker({ element: pin("map-pin map-pin--arka", `<span class="mark">${MARK_SVG}</span>АРКА 123`), anchor: "bottom" })
           .setLngLat(ARKA).addTo(map);
-        new maplibregl.Marker({ element: pin("map-pin map-pin--lib", "<i></i>Национальная библиотека"), anchor: "bottom" })
+        new maplibregl.Marker({ element: pin("map-pin map-pin--lib", narrow ? "<i></i>Библиотека" : "<i></i>Национальная библиотека"), anchor: "bottom" })
           .setLngLat(LIBRARY).addTo(map);
         new maplibregl.Marker({ element: pin("map-pin map-pin--metro", "<b>М</b>Восток"), anchor: "bottom" })
           .setLngLat(METRO_VOSTOK).addTo(map);
@@ -73,7 +75,7 @@ export default function PlaceMap() {
           const lng = pts.map((p) => p[0]);
           const lat = pts.map((p) => p[1]);
           map.fitBounds([[Math.min(...lng), Math.min(...lat)], [Math.max(...lng), Math.max(...lat)]],
-            { padding: { top: 90, bottom: 70, left: 160, right: 150 }, maxZoom: 16, duration: 0 });
+            { padding: narrow ? { top: 70, bottom: 40, left: 40, right: 90 } : { top: 90, bottom: 70, left: 160, right: 150 }, maxZoom: 16, duration: 0 });
         });
       } catch {
         if (!cancelled) setFailed(true);

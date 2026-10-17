@@ -647,10 +647,12 @@ export function createRoom({ stage, tags = {}, onFallback }) {
     TAGS.forEach(({ el, p }) => {
       if (!el) return;
       proj.copy(p).project(camera);
-      const vis = proj.z < 1 && Math.abs(proj.x) < 0.92 && Math.abs(proj.y) < 0.85;
+      const x = ((proj.x + 1) / 2) * w - 15, y = ((1 - proj.y) / 2) * h - 15;
+      // подпись целиком в кадре, иначе прячем — на узком экране длинные подписи вылезали за край
+      const vis = proj.z < 1 && Math.abs(proj.y) < 0.85 && x >= 8 && x + el.offsetWidth <= w - 8;
       const tag = el.dataset.tag;
       el.classList.toggle("is-off", !vis || (inside ? tag === "ceiling" : tag === "lib"));
-      el.style.transform = `translate(${((proj.x + 1) / 2) * w - 15}px, ${((1 - proj.y) / 2) * h - 15}px)`;
+      el.style.transform = `translate(${x}px, ${y}px)`;
     });
   }
 

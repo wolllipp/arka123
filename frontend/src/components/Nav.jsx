@@ -1,4 +1,4 @@
-import { useRef } from "react";
+import { useEffect, useRef, useState } from "react";
 import { ScrollTrigger, useGSAP, reduceMotion } from "../lib/gsap";
 import { markTimeline } from "../lib/markAnimation";
 import { AnimatedMark } from "./Mark";
@@ -11,11 +11,27 @@ const LINKS = [
   ["#gallery", "Галерея"],
   ["#reviews", "Отзывы"],
 ];
+// в мобильном меню ещё и адрес — на телефоне его ищут чаще всего
+const MOBILE_LINKS = [...LINKS, ["#place", "Как добраться"]];
 
 export default function Nav() {
   const navRef = useRef(null);
   const markRef = useRef(null);
   const hoverRef = useRef(null);
+  const [open, setOpen] = useState(false);
+
+  // меню закрывается по Esc, при прокрутке и при переходе к разделу
+  useEffect(() => {
+    if (!open) return;
+    const close = () => setOpen(false);
+    const onKey = (e) => e.key === "Escape" && close();
+    addEventListener("keydown", onKey);
+    addEventListener("scroll", close, { passive: true, once: true });
+    return () => {
+      removeEventListener("keydown", onKey);
+      removeEventListener("scroll", close);
+    };
+  }, [open]);
 
   useGSAP(() => {
     const nav = navRef.current;
@@ -49,7 +65,17 @@ export default function Nav() {
       <nav className="nav__links" aria-label="Разделы">
         {LINKS.map(([href, title]) => <a key={href} href={href}>{title}</a>)}
       </nav>
-      <a className="btn btn--sm" href="#book">Забронировать</a>
+      <div className="nav__end">
+        <a className="btn btn--sm" href="#book">Забронировать</a>
+        <button type="button" className="nav__burger" aria-label={open ? "Закрыть меню" : "Открыть меню"} aria-expanded={open} aria-controls="nav-menu" onClick={() => setOpen((o) => !o)}>
+          <span /><span />
+        </button>
+      </div>
+      {open && (
+        <nav className="nav__menu" id="nav-menu" aria-label="Разделы">
+          {MOBILE_LINKS.map(([href, title]) => <a key={href} href={href} onClick={() => setOpen(false)}>{title}</a>)}
+        </nav>
+      )}
     </header>
   );
 }
