@@ -36,6 +36,7 @@ export default function BookingWidget() {
   const [confirmCancel, setConfirmCancel] = useState(false);
   const [page, setPage] = useState(0);
   const [preset, setPreset] = useState(null); // тариф из блока «Тарифы»: { title, hours }
+  const [slow, setSlow] = useState(false); // бесплатный хостинг усыпляет API — первый ответ бывает через минуту
   const quoteSeq = useRef(0);
 
   const minHours = catalog?.minHours ?? 2;
@@ -79,6 +80,12 @@ export default function BookingWidget() {
       say("pick", e.error);
     }
   }, [selectDay]);
+
+  useEffect(() => {
+    if (days.length || msg.pick) return;
+    const t = setTimeout(() => setSlow(true), 5000);
+    return () => clearTimeout(t);
+  }, [days.length, msg.pick]);
 
   useEffect(() => {
     // первичная загрузка: каталог (форматы, услуги, правила) и первые две недели
@@ -217,7 +224,7 @@ export default function BookingWidget() {
 
   const monthTitle = days.length
     ? [...new Set(days.map((d) => parseDate(d.date).getMonth()))].map((m) => MONTHS_NOM[m]).join(" — ") + " " + parseDate(days[0].date).getFullYear()
-    : msg.pick ? "Календарь недоступен" : "Загружаем календарь…";
+    : msg.pick ? "Календарь недоступен" : slow ? "Сервер просыпается — это до минуты…" : "Загружаем календарь…";
   const when = range && date ? `${dayMonth(date)}, ${hh(range.start)}–${hh(range.end)}` : "";
 
   return (

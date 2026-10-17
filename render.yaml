@@ -1,0 +1,64 @@
+# Render Blueprint: сайт, API, PostgreSQL и Redis одной кнопкой (Dashboard → New → Blueprint → этот репозиторий).
+# Если Render выдаст сервисам другие адреса, поправьте VITE_API_URL, CORS_ORIGINS и SITE_URL и пересоберите.
+services:
+  - type: web
+    name: arka123
+    runtime: static
+    rootDir: frontend
+    buildCommand: npm ci && npm run build
+    staticPublishPath: dist
+    routes:
+      - type: rewrite
+        source: /*
+        destination: /index.html
+    envVars:
+      - key: VITE_API_URL
+        value: https://arka-backend.onrender.com/api
+
+  - type: web
+    name: arka-backend
+    runtime: docker
+    rootDir: arka-backend
+    plan: free
+    region: frankfurt
+    healthCheckPath: /api/catalog
+    envVars:
+      - key: DB_HOST
+        fromDatabase: { name: arka-db, property: host }
+      - key: DB_PORT
+        fromDatabase: { name: arka-db, property: port }
+      - key: POSTGRES_DB
+        fromDatabase: { name: arka-db, property: database }
+      - key: POSTGRES_USER
+        fromDatabase: { name: arka-db, property: user }
+      - key: POSTGRES_PASSWORD
+        fromDatabase: { name: arka-db, property: password }
+      - key: REDIS_HOST
+        fromService: { type: keyvalue, name: arka-cache, property: host }
+      - key: REDIS_PORT
+        fromService: { type: keyvalue, name: arka-cache, property: port }
+      - key: JWT_SECRET
+        generateValue: true
+      - key: ADMIN_EMAIL
+        value: admin@arka123.by
+      - key: ADMIN_PASSWORD
+        sync: false
+      - key: CORS_ORIGINS
+        value: https://arka123.onrender.com
+      - key: SITE_URL
+        value: https://arka123.onrender.com
+      # письма: без SMTP бронь сохраняется, письмо просто не уходит.
+      # Для отправки добавьте SMTP_HOST, SMTP_PORT, SMTP_AUTH, SMTP_STARTTLS, SMTP_USERNAME, SMTP_PASSWORD, MAIL_FROM (см. arka-backend/.env.example)
+
+  - type: keyvalue
+    name: arka-cache
+    plan: free
+    region: frankfurt
+    ipAllowList: []
+
+databases:
+  - name: arka-db
+    plan: free
+    region: frankfurt
+    databaseName: arka
+    user: arka

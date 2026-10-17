@@ -82,6 +82,21 @@ npm run dev                   # http://127.0.0.1:8123
 
 Подробности — в `arka-backend/README.md` и `frontend/README.md`.
 
+## Деплой (Render)
+
+`render.yaml` поднимает всё одной кнопкой: сайт (static), API (Docker, `arka-backend/Dockerfile`), PostgreSQL и Redis.
+
+1. Render → **New → Blueprint** → выбрать этот репозиторий.
+2. Задать `ADMIN_PASSWORD`, остальное подставится само.
+3. Если Render выдаст адреса не `arka123.onrender.com` и `arka-backend.onrender.com`, нужно поправить переменные и пересобрать:
+   - `VITE_API_URL` у сайта;
+   - `CORS_ORIGINS` и `SITE_URL` у API.
+4. Чтобы письма уходили по-настоящему, добавить API переменные `SMTP_*` и `MAIL_FROM` (пример в `arka-backend/.env.example`). Без них бронь сохраняется, просто письмо не отправляется.
+
+Ограничения бесплатного тарифа:
+- API засыпает после 15 минут без запросов, первое открытие календаря занимает до минуты (сайт об этом предупреждает);
+- бесплатная база живёт 30 дней.
+
 ## Структура
 
 | Папка | Что внутри |
