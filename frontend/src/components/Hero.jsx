@@ -89,7 +89,6 @@ export default function Hero({ ready }) {
           <span className="line"><span>напротив</span></span>
           <span className="line"><span>Библиотеки.</span></span>
         </h1>
-        <p className="lead hero__sub reveal-hero">Светлый зал на 123&nbsp;м² с двумя арочными окнами 4&nbsp;×&nbsp;3,5&nbsp;м — для мастер-классов, лекций и семинаров, которые хочется запомнить.</p>
         <div className="hero__cta reveal-hero">
           <a className="btn" href="#book">Выбрать дату <ArrowRight /></a>
           <a className="btn btn--ghost" href="#room">Покрутить зал в 3D</a>
