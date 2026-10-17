@@ -27,7 +27,7 @@ export default function Hero({ ready }) {
   useEffect(() => {
     if (!film || !canvasRef.current) return;
     let player = null;
-    // кадры (~13 МБ) грузим после загрузки страницы — иначе они задерживают заставку
+    // кадры (~19 МБ) грузим после загрузки страницы — иначе они задерживают заставку
     const start = () => {
       player = createFilmPlayer(canvasRef.current, film, () => setFilmShown(true));
       playerRef.current = player;
@@ -61,7 +61,7 @@ export default function Hero({ ready }) {
     mm.add({ desk: "(min-width: 761px)", mob: "(max-width: 760px)" }, (ctx) => {
       const side = ctx.conditions.desk ? 31 : 8;
       const r = ctx.conditions.desk ? 18 : 42;
-      const FILM = film ? 2.6 : 0; // длина прокрутки видео — в «экранах» относительно раскрытия арки
+      const FILM = film ? film.screens ?? 2.6 : 0; // длина прокрутки видео — в «экранах» относительно раскрытия арки, задаётся в manifest.json
       const scrub = { p: 0 };
       const tl = gsap.timeline({ scrollTrigger: { trigger: ".window", start: "top top", end: `+=${130 + FILM * 130}%`, scrub: 0.6, pin: true } })
         .fromTo(".window__frame",

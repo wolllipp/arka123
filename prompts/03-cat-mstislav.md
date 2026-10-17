@@ -58,10 +58,7 @@
 
 ## Шаг 5. В сайт
 
-```bash
-cd frontend
-./tools/film-to-frames.sh ~/путь/к/hero-film.mp4     # видео → кадры для прокрутки
-cp ~/путь/к/mstislav-portrait.jpg public/assets/character/mstislav-portrait.jpg
-```
+Что в итоге пошло в работу (вместо полного сценария из трёх клипов — их не получилось сделать на бесплатных тарифах):
 
-Скрипт кладёт кадры в `public/assets/film/` и пишет `manifest.json`. Сайт сам подхватит видео-фон и портрет; пока файлов нет — показывается прежнее фото.
+- **Видео-фон:** пролёт камеры по реальным фото зала + один сгенерированный клип с Мстиславом у окна, см. `04-final-scene.md`. Сборка: `cd frontend && python3 tools/build-film.py "../Фото обработанное" ../generated_video.mp4`. Для готового цельного ролика подходит и `tools/film-to-frames.sh`.
+- **Статичный персонаж:** кот вырезан из `refs/mstislav-ref.jpg` (`swift tools/cutout.swift вход.jpg выход.png`) → `public/assets/character/mstislav-cutout.webp`, на сайте — в блоке бронирования, без рамки.
